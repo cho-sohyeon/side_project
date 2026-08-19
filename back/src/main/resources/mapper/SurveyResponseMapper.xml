@@ -10,4 +10,14 @@
 		</foreach>
 	</insert>
 
+	<select id="findLatestAnswers" resultType="com.trendledger.domain.SurveyAnswerRow">
+		SELECT DISTINCT ON (survey_type, question_code)
+			survey_type      AS surveyType,
+			question_code    AS questionCode,
+			selected_option  AS selectedOption
+		FROM survey_responses
+		WHERE profile_id = #{profileId}
+		ORDER BY survey_type, question_code, response_id DESC
+	</select>
+
 </mapper>

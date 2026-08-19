@@ -48,26 +48,28 @@ const QUESTIONS = [
 
 function SpendingHabitSurvey({ answers, onChange }) {
   return (
-    <div>
+    <div className="card section">
       <h3>소비습관 유형 설문</h3>
       {QUESTIONS.map((question, index) => (
-        <div key={question.code}>
-          <p>{question.code}. {question.text}</p>
-          {question.options.map((option) => (
-            <label key={option.value}>
-              <input
-                type="radio"
-                name={`spending-${question.code}`}
-                checked={answers[index] === option.value}
-                onChange={() => {
-                  const next = [...answers]
-                  next[index] = option.value
-                  onChange(next)
-                }}
-              />
-              {option.label}
-            </label>
-          ))}
+        <div className="field" key={question.code}>
+          <label>{question.code}. {question.text}</label>
+          <div className="radio-group">
+            {question.options.map((option) => (
+              <label key={option.value}>
+                <input
+                  type="radio"
+                  name={`spending-${question.code}`}
+                  checked={answers[index] === option.value}
+                  onChange={() => {
+                    const next = [...answers]
+                    next[index] = option.value
+                    onChange(next)
+                  }}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
         </div>
       ))}
     </div>

@@ -1,6 +1,7 @@
 package com.trendledger.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.trendledger.domain.ProfileDetail;
 import com.trendledger.domain.ProfileRegisterRequest;
 import com.trendledger.domain.ProfileUpsertRecord;
+import com.trendledger.domain.SurveyAnswerRow;
 import com.trendledger.domain.SurveyResponseRecord;
 import com.trendledger.mapper.ProfileMapper;
 import com.trendledger.mapper.SurveyResponseMapper;
@@ -32,6 +34,21 @@ public class ProfileService {
 
 	public Optional<ProfileDetail> getProfile() {
 		return profileMapper.findOne();
+	}
+
+	public List<String> getLatestAnswers(Long profileId, String surveyType, List<String> questionCodes) {
+		Map<String, String> byQuestionCode = surveyResponseMapper.findLatestAnswers(profileId).stream()
+				.filter(row -> row.surveyType().equals(surveyType))
+				.collect(java.util.stream.Collectors.toMap(SurveyAnswerRow::questionCode, SurveyAnswerRow::selectedOption));
+		return questionCodes.stream().map(byQuestionCode::get).toList();
+	}
+
+	public List<String> spendingHabitQuestionCodes() {
+		return SPENDING_HABIT_QUESTION_CODES;
+	}
+
+	public List<String> investmentQuestionCodes() {
+		return INVESTMENT_QUESTION_CODES;
 	}
 
 	public void register(ProfileRegisterRequest request) {

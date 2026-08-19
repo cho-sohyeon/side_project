@@ -3,6 +3,7 @@ package com.trendledger.domain;
 public record NewsCard(
 		String title,
 		String summary,
-		String url
+		String url,
+		String imageUrl
 ) {
 }

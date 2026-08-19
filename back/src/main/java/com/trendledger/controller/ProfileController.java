@@ -27,8 +27,13 @@ public class ProfileController {
 	@GetMapping
 	public ProfileResponse getProfile() {
 		return profileService.getProfile()
-				.map(profile -> new ProfileResponse(true, profile))
-				.orElse(new ProfileResponse(false, null));
+				.map(profile -> new ProfileResponse(
+						true,
+						profile,
+						profileService.getLatestAnswers(profile.profileId(), "SPENDING_HABIT", profileService.spendingHabitQuestionCodes()),
+						profileService.getLatestAnswers(profile.profileId(), "INVESTMENT_PROPENSITY", profileService.investmentQuestionCodes())
+				))
+				.orElse(new ProfileResponse(false, null, null, null));
 	}
 
 	@PostMapping

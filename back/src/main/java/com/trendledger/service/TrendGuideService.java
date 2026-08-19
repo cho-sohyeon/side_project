@@ -38,12 +38,13 @@ public class TrendGuideService {
 	private final TrendGuideCacheMapper trendGuideCacheMapper;
 	private final NaverNewsClient naverNewsClient;
 	private final OpenAiClient openAiClient;
+	private final OgImageExtractor ogImageExtractor;
 	private final ObjectMapper objectMapper;
 
 	public TrendGuideService(BudgetGoalService budgetGoalService, ExpenseStatMapper expenseStatMapper,
 			ProfileMapper profileMapper, TierCalculator tierCalculator, TrendKeywordBuilder trendKeywordBuilder,
 			TrendGuideCacheMapper trendGuideCacheMapper, NaverNewsClient naverNewsClient, OpenAiClient openAiClient,
-			ObjectMapper objectMapper) {
+			OgImageExtractor ogImageExtractor, ObjectMapper objectMapper) {
 		this.budgetGoalService = budgetGoalService;
 		this.expenseStatMapper = expenseStatMapper;
 		this.profileMapper = profileMapper;
@@ -52,6 +53,7 @@ public class TrendGuideService {
 		this.trendGuideCacheMapper = trendGuideCacheMapper;
 		this.naverNewsClient = naverNewsClient;
 		this.openAiClient = openAiClient;
+		this.ogImageExtractor = ogImageExtractor;
 		this.objectMapper = objectMapper;
 	}
 
@@ -114,12 +116,19 @@ public class TrendGuideService {
 
 		List<Map<String, String>> merged = mergeAndDedupe(resultA.items(), resultB.items(), TOTAL_CARDS);
 
+		String investmentPropensityType = profile.map(ProfileDetail::investmentPropensityType).orElse("정보 없음");
+		String spendingHabitType = profile.map(ProfileDetail::spendingHabitType).orElse("정보 없음");
+		String ageHouseholdType = profile.map(ProfileDetail::ageHouseholdType).orElse("정보 없음");
+
 		List<NewsCard> cards = merged.stream()
 				.map(item -> {
 					String title = stripHtml(item.get("title"));
 					String description = stripHtml(item.get("description"));
-					String summary = openAiClient.summarizeNews(title, description);
-					return new NewsCard(title, summary, item.get("link"));
+					String insight = openAiClient.generatePersonalizedInsight(
+							title, description, tier, investmentPropensityType, spendingHabitType, ageHouseholdType);
+					String link = item.get("link");
+					String imageUrl = ogImageExtractor.extract(link);
+					return new NewsCard(title, insight, link, imageUrl);
 				})
 				.toList();
 

@@ -46,22 +46,22 @@ function BudgetGoalForm({ onSaved }) {
   }
 
   return (
-    <div>
+    <div className="card section">
       <h3>이번 달({yearMonth}) 예산 목표</h3>
-      {existingGoal && <p>현재 설정된 목표: {existingGoal.targetAmount}원</p>}
-      <label>
-        목표 금액
+      {existingGoal && <p className="muted">현재 설정된 목표: {existingGoal.targetAmount}원</p>}
+      <div className="field">
+        <label>목표 금액</label>
         <input
           type="number"
           value={targetAmount}
           onChange={(e) => setTargetAmount(e.target.value)}
           placeholder="예: 500000"
         />
-      </label>
-      <button type="button" onClick={handleSave} disabled={saving || !targetAmount}>
+      </div>
+      <button type="button" className="btn btn-primary" onClick={handleSave} disabled={saving || !targetAmount}>
         {saving ? '저장 중...' : existingGoal ? '목표 수정' : '목표 등록'}
       </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-text">{error}</p>}
     </div>
   )
 }

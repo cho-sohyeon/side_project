@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FF6699']
+const COLORS = ['#FFB627', '#E6A200', '#7A5200', '#FFD98A', '#5C3D00', '#F2C464', '#B8860B']
 
 function CategoryChart({ categorySummaries }) {
   if (categorySummaries.length === 0) {

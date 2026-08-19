@@ -14,7 +14,7 @@ function MonthlyTrendChart({ monthlySummaries }) {
           <XAxis dataKey="yearMonth" />
           <YAxis />
           <Tooltip />
-          <Line type="monotone" dataKey="totalAmount" stroke="#8884d8" />
+          <Line type="monotone" dataKey="totalAmount" stroke="#E6A200" />
         </LineChart>
       </ResponsiveContainer>
     </div>

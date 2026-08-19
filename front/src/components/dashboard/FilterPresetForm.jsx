@@ -30,20 +30,20 @@ function FilterPresetForm({ currentFilter, onSaved }) {
   }
 
   return (
-    <div>
-      <label>
-        프리셋 이름
+    <div className="card section">
+      <div className="field">
+        <label>프리셋 이름</label>
         <input
           type="text"
           value={presetName}
           onChange={(e) => setPresetName(e.target.value)}
           placeholder="예: 최근 식비"
         />
-      </label>
-      <button type="button" onClick={handleSave} disabled={saving || !presetName}>
+      </div>
+      <button type="button" className="btn" onClick={handleSave} disabled={saving || !presetName}>
         {saving ? '저장 중...' : '이 조건으로 프리셋 저장'}
       </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-text">{error}</p>}
     </div>
   )
 }

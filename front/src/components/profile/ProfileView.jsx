@@ -44,11 +44,11 @@ function ProfileView() {
   }
 
   if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>
+    return <p className="error-text">{error}</p>
   }
 
   if (!response) {
-    return <p>불러오는 중...</p>
+    return <p className="muted">불러오는 중...</p>
   }
 
   if (!response.registered) {
@@ -60,6 +60,8 @@ function ProfileView() {
       <ProfileRegisterForm
         mode="update"
         initialProfile={response.profile}
+        initialSpendingAnswers={response.spendingHabitAnswers}
+        initialInvestmentAnswers={response.investmentAnswers}
         onSaved={handleSaved}
       />
     )
@@ -67,14 +69,14 @@ function ProfileView() {
 
   const profile = response.profile
   return (
-    <section>
+    <section className="card section">
       <h2>내 프로필</h2>
       <p>연령대/가구 유형: {labelOf(AGE_HOUSEHOLD_OPTIONS, profile.ageHouseholdType)}</p>
       <p>청약통장 보유: {profile.hasSubscriptionAccount ? '있음' : '없음'}</p>
       <p>독립 여부: {labelOf(LIVING_TYPE_OPTIONS, profile.livingType)}</p>
       <p>소비습관 유형: {SPENDING_HABIT_LABELS[profile.spendingHabitType]}</p>
       <p>투자 성향: {INVESTMENT_LABELS[profile.investmentPropensityType]}</p>
-      <button type="button" onClick={() => setEditing(true)}>
+      <button type="button" className="btn" onClick={() => setEditing(true)}>
         수정
       </button>
     </section>

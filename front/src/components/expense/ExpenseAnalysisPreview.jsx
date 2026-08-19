@@ -29,36 +29,34 @@ function ExpenseAnalysisPreview({ analysis, onSaved }) {
   }
 
   return (
-    <div>
+    <div className="card section">
       <h3>분석 결과 확인</h3>
       <p>지출내역: {analysis.expenseDesc}</p>
       <p>지출금액: {analysis.amount}</p>
-      <div>
-        <label>
-          카테고리
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORY_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="field">
+        <label>카테고리</label>
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          {CATEGORY_OPTIONS.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </div>
-      <div>
+      <div className="field">
         <label>
-          트렌드 관련 여부
           <input
             type="checkbox"
             checked={isTrendRelated}
             onChange={(e) => setIsTrendRelated(e.target.checked)}
           />
+          {' '}트렌드 관련 여부
         </label>
       </div>
-      <button type="button" onClick={handleSave} disabled={saving}>
+      <button type="button" className="btn btn-primary" onClick={handleSave} disabled={saving}>
         {saving ? '등록 중...' : '등록'}
       </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-text">{error}</p>}
     </div>
   )
 }

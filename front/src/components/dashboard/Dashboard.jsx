@@ -33,7 +33,7 @@ function Dashboard() {
   }
 
   return (
-    <section>
+    <section className="section">
       <h2>소비 패턴 대시보드</h2>
       <StatFilterForm
         key={JSON.stringify(filter)}
@@ -42,9 +42,9 @@ function Dashboard() {
       />
       <FilterPresetForm currentFilter={filter} onSaved={refreshPresets} />
       <FilterPresetList presets={presets} onSelect={handleSearch} />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-text">{error}</p>}
       {stats && (
-        <div>
+        <div className="card section">
           <CategoryChart categorySummaries={stats.categorySummaries} />
           <MonthlyTrendChart monthlySummaries={stats.monthlySummaries} />
         </div>

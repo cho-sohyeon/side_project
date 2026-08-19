@@ -11,56 +11,62 @@ const LIVING_TYPE_OPTIONS = [
 
 function BasicInfoForm({ value, onChange }) {
   return (
-    <div>
+    <div className="card section">
       <h3>기본 정보</h3>
-      <div>
+      <div className="field">
         <label>연령대/가구 유형</label>
-        {AGE_HOUSEHOLD_OPTIONS.map((option) => (
-          <label key={option.value}>
-            <input
-              type="radio"
-              name="ageHouseholdType"
-              checked={value.ageHouseholdType === option.value}
-              onChange={() => onChange({ ...value, ageHouseholdType: option.value })}
-            />
-            {option.label}
-          </label>
-        ))}
+        <div className="radio-group">
+          {AGE_HOUSEHOLD_OPTIONS.map((option) => (
+            <label key={option.value}>
+              <input
+                type="radio"
+                name="ageHouseholdType"
+                checked={value.ageHouseholdType === option.value}
+                onChange={() => onChange({ ...value, ageHouseholdType: option.value })}
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
       </div>
-      <div>
+      <div className="field">
         <label>청약통장 보유 여부</label>
-        <label>
-          <input
-            type="radio"
-            name="hasSubscriptionAccount"
-            checked={value.hasSubscriptionAccount === true}
-            onChange={() => onChange({ ...value, hasSubscriptionAccount: true })}
-          />
-          있음
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="hasSubscriptionAccount"
-            checked={value.hasSubscriptionAccount === false}
-            onChange={() => onChange({ ...value, hasSubscriptionAccount: false })}
-          />
-          없음
-        </label>
-      </div>
-      <div>
-        <label>독립 여부</label>
-        {LIVING_TYPE_OPTIONS.map((option) => (
-          <label key={option.value}>
+        <div className="radio-group">
+          <label>
             <input
               type="radio"
-              name="livingType"
-              checked={value.livingType === option.value}
-              onChange={() => onChange({ ...value, livingType: option.value })}
+              name="hasSubscriptionAccount"
+              checked={value.hasSubscriptionAccount === true}
+              onChange={() => onChange({ ...value, hasSubscriptionAccount: true })}
             />
-            {option.label}
+            있음
           </label>
-        ))}
+          <label>
+            <input
+              type="radio"
+              name="hasSubscriptionAccount"
+              checked={value.hasSubscriptionAccount === false}
+              onChange={() => onChange({ ...value, hasSubscriptionAccount: false })}
+            />
+            없음
+          </label>
+        </div>
+      </div>
+      <div className="field">
+        <label>독립 여부</label>
+        <div className="radio-group">
+          {LIVING_TYPE_OPTIONS.map((option) => (
+            <label key={option.value}>
+              <input
+                type="radio"
+                name="livingType"
+                checked={value.livingType === option.value}
+                onChange={() => onChange({ ...value, livingType: option.value })}
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
       </div>
     </div>
   )

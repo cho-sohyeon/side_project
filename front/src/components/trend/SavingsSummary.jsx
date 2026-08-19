@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import TierBadge from './TierBadge'
-import NewsCardList from './NewsCardList'
 import { getTrendGuide } from '../../api/trendGuideApi'
 
-function TrendGuide({ onGoToProfile }) {
+function SavingsSummary() {
   const [guide, setGuide] = useState(null)
   const [error, setError] = useState(null)
 
@@ -23,21 +22,10 @@ function TrendGuide({ onGoToProfile }) {
 
   return (
     <section className="section">
-      <h2>절약 티어별 트렌드 투자 가이드</h2>
-      {!guide.profileRegistered && (
-        <div className="banner-warning">
-          <p>{guide.profileGuideMessage}</p>
-          {onGoToProfile && (
-            <button type="button" className="btn" onClick={onGoToProfile}>
-              프로필 등록하러 가기
-            </button>
-          )}
-        </div>
-      )}
+      <h2>오늘의 절약 확인</h2>
       <TierBadge tier={guide.tier} savingsRate={guide.savingsRate} />
-      <NewsCardList cards={guide.cards} tier={guide.tier} />
     </section>
   )
 }
 
-export default TrendGuide
+export default SavingsSummary

@@ -4,14 +4,18 @@ import SpendingHabitSurvey from './SpendingHabitSurvey'
 import InvestmentSurvey from './InvestmentSurvey'
 import { registerProfile, updateProfile } from '../../api/profileApi'
 
-function ProfileRegisterForm({ mode, initialProfile, onSaved }) {
+function ProfileRegisterForm({ mode, initialProfile, initialSpendingAnswers, initialInvestmentAnswers, onSaved }) {
   const [basicInfo, setBasicInfo] = useState({
     ageHouseholdType: initialProfile?.ageHouseholdType ?? 'YOUTH',
     hasSubscriptionAccount: initialProfile?.hasSubscriptionAccount ?? true,
     livingType: initialProfile?.livingType ?? 'INDEPENDENT',
   })
-  const [spendingAnswers, setSpendingAnswers] = useState(Array(5).fill(null))
-  const [investmentAnswers, setInvestmentAnswers] = useState(Array(3).fill(null))
+  const [spendingAnswers, setSpendingAnswers] = useState(
+    initialSpendingAnswers ?? Array(5).fill(null)
+  )
+  const [investmentAnswers, setInvestmentAnswers] = useState(
+    initialInvestmentAnswers ?? Array(3).fill(null)
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
@@ -45,15 +49,15 @@ function ProfileRegisterForm({ mode, initialProfile, onSaved }) {
   }
 
   return (
-    <div>
+    <div className="section">
       <h2>{mode === 'update' ? '프로필 수정' : '프로필 등록'}</h2>
       <BasicInfoForm value={basicInfo} onChange={setBasicInfo} />
       <SpendingHabitSurvey answers={spendingAnswers} onChange={setSpendingAnswers} />
       <InvestmentSurvey answers={investmentAnswers} onChange={setInvestmentAnswers} />
-      <button type="button" onClick={handleSubmit} disabled={saving}>
+      <button type="button" className="btn btn-primary" onClick={handleSubmit} disabled={saving}>
         {saving ? '저장 중...' : mode === 'update' ? '수정 완료' : '등록'}
       </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-text">{error}</p>}
     </div>
   )
 }

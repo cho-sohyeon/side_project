@@ -60,14 +60,39 @@ public class OpenAiClient {
 		return parse(content);
 	}
 
+	private static final String INSIGHT_SYSTEM_PROMPT = """
+			너는 사용자의 소비/투자 프로필에 맞춰 뉴스를 재해석해주는 큐레이터다.
+			뉴스 기사가 "이 사용자에게 왜 중요한지"를 문장이 아니라
+			핵심 키워드/짧은 구(phrase) 형태로 압축해서 표현해라.
+
+			규칙:
+			- 완전한 문장(주어+서술어)으로 쓰지 말고, 명사구나 짧은 구로 끝내라.
+			- 공백 포함 12자 이내로 써라.
+			- 인스타그램 카드뉴스의 큰 타이틀처럼 강렬하고 한눈에 들어오게 써라.
+			- 예시 형식: "공격투자 기회", "청약 골든타임", "ETF 손실 주의"
+			- 다른 설명, 마침표, 따옴표 없이 구문 하나만 출력해라.
+			""";
+
 	@SuppressWarnings("unchecked")
-	public String summarizeNews(String title, String description) {
+	public String generatePersonalizedInsight(String title, String description, String tier,
+			String investmentPropensityType, String spendingHabitType, String ageHouseholdType) {
+		String userContext = """
+				[사용자 프로필]
+				절약 티어: %s
+				투자 성향: %s
+				소비습관 유형: %s
+				연령대/가구유형: %s
+
+				[뉴스 기사]
+				제목: %s
+				본문: %s
+				""".formatted(tier, investmentPropensityType, spendingHabitType, ageHouseholdType, title, description);
+
 		Map<String, Object> requestBody = Map.of(
 				"model", "gpt-4o-mini",
 				"messages", List.of(
-						Map.of("role", "system", "content",
-								"너는 뉴스 기사를 한 문장으로 요약하는 어시스턴트다. 제목과 본문 일부를 보고 핵심을 한 문장으로 요약해라. 다른 설명 없이 요약 문장만 출력해라."),
-						Map.of("role", "user", "content", "제목: " + title + "\n본문: " + description)
+						Map.of("role", "system", "content", INSIGHT_SYSTEM_PROMPT),
+						Map.of("role", "user", "content", userContext)
 				)
 		);
 
