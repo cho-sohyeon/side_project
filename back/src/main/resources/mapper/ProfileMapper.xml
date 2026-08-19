@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.ProfileMapper">
+
+	<select id="findOne" resultType="com.trendledger.domain.ProfileDetail">
+		SELECT
+			profile_id                  AS profileId,
+			age_household_type          AS ageHouseholdType,
+			has_subscription_account    AS hasSubscriptionAccount,
+			living_type                 AS livingType,
+			spending_habit_type         AS spendingHabitType,
+			investment_propensity_type  AS investmentPropensityType,
+			created_at                  AS createdAt,
+			updated_at                  AS updatedAt
+		FROM profiles
+		ORDER BY profile_id ASC
+		LIMIT 1
+	</select>
+
+	<insert id="insert" parameterType="com.trendledger.domain.ProfileUpsertRecord">
+		INSERT INTO profiles (age_household_type, has_subscription_account, living_type, spending_habit_type, investment_propensity_type)
+		VALUES (#{ageHouseholdType}, #{hasSubscriptionAccount}, #{livingType}, #{spendingHabitType}, #{investmentPropensityType})
+	</insert>
+
+	<update id="update" parameterType="com.trendledger.domain.ProfileUpsertRecord">
+		UPDATE profiles
+		SET age_household_type = #{ageHouseholdType},
+			has_subscription_account = #{hasSubscriptionAccount},
+			living_type = #{livingType},
+			spending_habit_type = #{spendingHabitType},
+			investment_propensity_type = #{investmentPropensityType},
+			updated_at = now()
+		WHERE profile_id = #{profileId}
+	</update>
+
+</mapper>

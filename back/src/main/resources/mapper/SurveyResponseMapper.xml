@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.SurveyResponseMapper">
+
+	<insert id="insertBatch" parameterType="java.util.List">
+		INSERT INTO survey_responses (profile_id, survey_type, survey_version, question_code, selected_option)
+		VALUES
+		<foreach collection="list" item="r" separator=",">
+			(#{r.profileId}, #{r.surveyType}, #{r.surveyVersion}, #{r.questionCode}, #{r.selectedOption})
+		</foreach>
+	</insert>
+
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.FilterPresetMapper">
+
+	<insert id="insert" parameterType="com.trendledger.domain.FilterPresetSaveRequest">
+		INSERT INTO filter_presets (preset_name, start_year_month, end_year_month, categories)
+		VALUES (#{presetName}, #{startYearMonth}, #{endYearMonth}, #{categories})
+	</insert>
+
+	<select id="findAll" resultType="com.trendledger.domain.FilterPreset">
+		SELECT
+			preset_id         AS presetId,
+			preset_name        AS presetName,
+			start_year_month   AS startYearMonth,
+			end_year_month      AS endYearMonth,
+			categories
+		FROM filter_presets
+		ORDER BY preset_id DESC
+	</select>
+
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.ExpenseStatMapper">
+
+	<sql id="whereClause">
+		<where>
+			<if test="startYearMonth != null and startYearMonth != ''">
+				AND to_char(expense_date, 'YYYY-MM') &gt;= #{startYearMonth}
+			</if>
+			<if test="endYearMonth != null and endYearMonth != ''">
+				AND to_char(expense_date, 'YYYY-MM') &lt;= #{endYearMonth}
+			</if>
+			<if test="categories != null and categories.size() > 0">
+				AND category IN
+				<foreach item="cat" collection="categories" open="(" separator="," close=")">
+					#{cat}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+	<select id="findCategorySummaries" parameterType="com.trendledger.domain.ExpenseStatRequest" resultType="com.trendledger.domain.CategorySummary">
+		SELECT
+			category,
+			SUM(amount) AS totalAmount,
+			0 AS ratio
+		FROM expenses
+		<include refid="whereClause" />
+		GROUP BY category
+		ORDER BY totalAmount DESC
+	</select>
+
+	<select id="findMonthlySummaries" parameterType="com.trendledger.domain.ExpenseStatRequest" resultType="com.trendledger.domain.MonthlySummary">
+		SELECT
+			to_char(expense_date, 'YYYY-MM') AS yearMonth,
+			SUM(amount) AS totalAmount
+		FROM expenses
+		<include refid="whereClause" />
+		GROUP BY to_char(expense_date, 'YYYY-MM')
+		ORDER BY yearMonth ASC
+	</select>
+
+	<select id="findMonthlyTotal" resultType="java.math.BigDecimal">
+		SELECT COALESCE(SUM(amount), 0)
+		FROM expenses
+		WHERE to_char(expense_date, 'YYYY-MM') = #{yearMonth}
+	</select>
+
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.BudgetGoalMapper">
+
+	<select id="findByYearMonth" resultType="com.trendledger.domain.BudgetGoal">
+		SELECT
+			goal_id        AS goalId,
+			year_month     AS yearMonth,
+			target_amount  AS targetAmount
+		FROM budget_goals
+		WHERE year_month = #{yearMonth}
+	</select>
+
+	<insert id="upsert">
+		INSERT INTO budget_goals (year_month, target_amount)
+		VALUES (#{yearMonth}, #{targetAmount})
+		ON CONFLICT (year_month) DO UPDATE SET target_amount = #{targetAmount}
+	</insert>
+
+</mapper>
