@@ -8,6 +8,8 @@ public record ExpenseSaveRequest(
 		BigDecimal amount,
 		LocalDate expenseDate,
 		String category,
-		boolean isTrendRelated
+		boolean isTrendRelated,
+		String transactionType,
+		boolean isSettlement
 ) {
 }

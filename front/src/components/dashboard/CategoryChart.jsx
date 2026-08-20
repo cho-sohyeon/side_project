@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { formatWon } from '../../utils/format'
 
 const COLORS = ['#FFB627', '#E6A200', '#7A5200', '#FFD98A', '#5C3D00', '#F2C464', '#B8860B']
 
@@ -25,7 +26,7 @@ function CategoryChart({ categorySummaries }) {
               <Cell key={entry.category} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip />
+          <Tooltip formatter={(value) => formatWon(value)} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>

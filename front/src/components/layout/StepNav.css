@@ -6,6 +6,10 @@
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 16px rgba(92, 61, 0, 0.06);
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  flex-shrink: 0;
 }
 
 .bottom-nav-item {

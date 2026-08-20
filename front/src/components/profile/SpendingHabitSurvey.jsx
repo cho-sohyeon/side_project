@@ -52,7 +52,26 @@ function SpendingHabitSurvey({ answers, onChange }) {
       <h3>소비습관 유형 설문</h3>
       {QUESTIONS.map((question, index) => (
         <div className="field" key={question.code}>
-          <label>{question.code}. {question.text}</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'none', fontSize: '13px' }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: answers[index] ? 'var(--accent-fill)' : 'var(--accent-soft)',
+                color: 'var(--accent-strong)',
+                fontSize: '11px',
+                fontWeight: 800,
+                flexShrink: 0,
+              }}
+            >
+              {index + 1}
+            </span>
+            {question.text}
+          </label>
           <div className="radio-group">
             {question.options.map((option) => (
               <label key={option.value}>

@@ -2,8 +2,11 @@ package com.trendledger.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +18,7 @@ import com.trendledger.domain.ExpenseAnalyzeResponse;
 import com.trendledger.domain.ExpenseSaveRequest;
 import com.trendledger.domain.ExpenseStatRequest;
 import com.trendledger.domain.ExpenseStatResponse;
+import com.trendledger.domain.ExpenseSummaryResponse;
 import com.trendledger.service.ExpenseService;
 import com.trendledger.service.ExpenseStatService;
 
@@ -40,9 +44,29 @@ public class ExpenseController {
 		expenseService.save(request);
 	}
 
+	@PostMapping("/bulk")
+	public void saveBulk(@RequestBody List<ExpenseSaveRequest> requests) {
+		expenseService.saveBulk(requests);
+	}
+
+	@PutMapping("/{expenseId}")
+	public void update(@PathVariable Long expenseId, @RequestBody ExpenseSaveRequest request) {
+		expenseService.update(expenseId, request);
+	}
+
+	@DeleteMapping("/{expenseId}")
+	public void delete(@PathVariable Long expenseId) {
+		expenseService.delete(expenseId);
+	}
+
 	@GetMapping
 	public List<Expense> list() {
 		return expenseService.findAll();
+	}
+
+	@GetMapping("/summary")
+	public ExpenseSummaryResponse summary() {
+		return expenseService.getSummary();
 	}
 
 	@GetMapping("/stats")

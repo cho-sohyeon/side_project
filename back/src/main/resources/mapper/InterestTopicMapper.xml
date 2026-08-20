@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.InterestTopicMapper">
+
+	<select id="findAll" resultType="java.lang.String">
+		SELECT topic_code FROM interest_topics ORDER BY topic_code
+	</select>
+
+	<delete id="deleteAll">
+		DELETE FROM interest_topics
+	</delete>
+
+	<insert id="insert">
+		INSERT INTO interest_topics (topic_code) VALUES (#{topicCode})
+		ON CONFLICT (topic_code) DO NOTHING
+	</insert>
+
+</mapper>

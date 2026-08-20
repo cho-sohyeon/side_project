@@ -23,10 +23,49 @@ export async function saveExpense(expense) {
   }
 }
 
+export async function saveExpensesBulk(expenses) {
+  const response = await fetch(`${BASE_URL}/api/expenses/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(expenses),
+  })
+  if (!response.ok) {
+    throw new Error(`일괄 등록 실패 (status ${response.status})`)
+  }
+}
+
+export async function updateExpense(expenseId, expense) {
+  const response = await fetch(`${BASE_URL}/api/expenses/${expenseId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(expense),
+  })
+  if (!response.ok) {
+    throw new Error(`수정 요청 실패 (status ${response.status})`)
+  }
+}
+
+export async function deleteExpense(expenseId) {
+  const response = await fetch(`${BASE_URL}/api/expenses/${expenseId}`, {
+    method: 'DELETE',
+  })
+  if (!response.ok) {
+    throw new Error(`삭제 요청 실패 (status ${response.status})`)
+  }
+}
+
 export async function getExpenses() {
   const response = await fetch(`${BASE_URL}/api/expenses`)
   if (!response.ok) {
     throw new Error(`목록 조회 실패 (status ${response.status})`)
+  }
+  return response.json()
+}
+
+export async function getExpenseSummary() {
+  const response = await fetch(`${BASE_URL}/api/expenses/summary`)
+  if (!response.ok) {
+    throw new Error(`잔액 조회 실패 (status ${response.status})`)
   }
   return response.json()
 }

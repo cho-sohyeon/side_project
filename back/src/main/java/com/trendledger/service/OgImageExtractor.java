@@ -24,8 +24,8 @@ public class OgImageExtractor {
 
 	public OgImageExtractor() {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-		requestFactory.setConnectTimeout((int) Duration.ofSeconds(3).toMillis());
-		requestFactory.setReadTimeout((int) Duration.ofSeconds(3).toMillis());
+		requestFactory.setConnectTimeout((int) Duration.ofMillis(1500).toMillis());
+		requestFactory.setReadTimeout((int) Duration.ofMillis(1500).toMillis());
 		this.restClient = RestClient.builder()
 				.requestFactory(requestFactory)
 				.build();

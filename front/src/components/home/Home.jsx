@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { getProfile } from '../../api/profileApi'
-import { getTrendGuide } from '../../api/trendGuideApi'
+import { getTrendGuide, getTodayIssues, getInterestIssues } from '../../api/trendGuideApi'
+import { getExpenseSummary } from '../../api/expenseApi'
+import NewsCardList from '../trend/NewsCardList'
+import QuickExpenseInput from './QuickExpenseInput'
+import BudgetProgressBar from './BudgetProgressBar'
+import { formatWon } from '../../utils/format'
 
 const TIER_LABELS = {
   NONE: '절약 없음',
@@ -10,18 +15,21 @@ const TIER_LABELS = {
   PLATINUM: 'Platinum',
 }
 
-const QUICK_LINKS = [
-  { key: 'profile', icon: '👤', label: '프로필' },
-  { key: 'goal', icon: '🎯', label: '목표' },
-  { key: 'expense', icon: '✏️', label: '지출입력' },
-  { key: 'savings', icon: '💰', label: '절약확인' },
-  { key: 'trend', icon: '📈', label: '투자트렌드' },
-]
-
 function Home({ onNavigate }) {
   const [profileRegistered, setProfileRegistered] = useState(null)
   const [tier, setTier] = useState(null)
   const [savingsRate, setSavingsRate] = useState(null)
+  const [summary, setSummary] = useState(null)
+  const [todayCards, setTodayCards] = useState([])
+  const [interestCards, setInterestCards] = useState([])
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  function refreshSummary() {
+    getExpenseSummary()
+      .then(setSummary)
+      .catch(() => setSummary(null))
+    setRefreshKey((k) => k + 1)
+  }
 
   useEffect(() => {
     getProfile()
@@ -33,6 +41,13 @@ function Home({ onNavigate }) {
         setSavingsRate(guide.savingsRate)
       })
       .catch(() => setTier(null))
+    refreshSummary()
+    getTodayIssues()
+      .then(setTodayCards)
+      .catch(() => setTodayCards([]))
+    getInterestIssues()
+      .then(setInterestCards)
+      .catch(() => setInterestCards([]))
   }, [])
 
   return (
@@ -45,18 +60,72 @@ function Home({ onNavigate }) {
           color: 'var(--accent-strong)',
         }}
       >
-        <p style={{ fontSize: '12px', fontWeight: 700, opacity: 0.75, margin: '0 0 4px' }}>
-          오늘도 화이팅!
-        </p>
-        <h2 style={{ margin: '0 0 4px' }}>
-          {tier ? `${TIER_LABELS[tier] ?? tier} 등급이에요` : '나만의 절약 리포트'}
-        </h2>
-        {savingsRate !== null && (
-          <p style={{ fontSize: '13px', margin: 0, opacity: 0.85 }}>
-            이번 달 절약률 {(Number(savingsRate) * 100).toFixed(1)}%
-          </p>
-        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <p style={{ fontSize: '12px', fontWeight: 700, opacity: 0.75, margin: '0 0 4px' }}>
+              내 잔액
+            </p>
+            <h2 style={{ margin: '0 0 12px', fontSize: '28px' }}>
+              {summary ? formatWon(summary.balance) : '- 원'}
+            </h2>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '3px 9px',
+                borderRadius: '999px',
+                background: 'rgba(255,255,255,0.55)',
+                fontSize: '11px',
+                fontWeight: 800,
+                marginBottom: '4px',
+              }}
+            >
+              {tier ? TIER_LABELS[tier] ?? tier : '-'}
+            </span>
+            {savingsRate !== null && (
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 700, opacity: 0.85 }}>
+                이번 달 절약률 {(Number(savingsRate) * 100).toFixed(1)}%
+              </p>
+            )}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <div>
+            <p style={{ fontSize: '11px', margin: '0 0 2px', opacity: 0.75 }}>순수입 (정산 제외)</p>
+            <p style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>
+              {summary ? formatWon(summary.netPersonalIncome) : '-'}
+            </p>
+          </div>
+          <div>
+            <p style={{ fontSize: '11px', margin: '0 0 2px', opacity: 0.75 }}>순지출 (정산 제외)</p>
+            <p style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>
+              {summary ? formatWon(summary.netPersonalExpense) : '-'}
+            </p>
+          </div>
+        </div>
       </div>
+
+      <QuickExpenseInput onSaved={refreshSummary} />
+      <BudgetProgressBar onNavigate={onNavigate} refreshKey={refreshKey} />
+
+      {todayCards.length > 0 && (
+        <div>
+          <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text)' }}>
+            오늘의 트렌드 이슈
+          </p>
+          <NewsCardList cards={todayCards} tier="TODAY" />
+        </div>
+      )}
+
+      {interestCards.length > 0 && (
+        <div>
+          <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text)' }}>
+            📌 관심 토픽 뉴스
+          </p>
+          <NewsCardList cards={interestCards} tier="HOUSING" />
+        </div>
+      )}
 
       {profileRegistered === false && (
         <div className="banner-warning">
@@ -66,35 +135,6 @@ function Home({ onNavigate }) {
           </button>
         </div>
       )}
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '10px',
-        }}
-      >
-        {QUICK_LINKS.map((link) => (
-          <button
-            key={link.key}
-            type="button"
-            className="card"
-            onClick={() => onNavigate(link.key)}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '18px 8px',
-              cursor: 'pointer',
-            }}
-          >
-            <span style={{ fontSize: '26px' }}>{link.icon}</span>
-            <span style={{ fontSize: '12px', fontWeight: 700 }}>{link.label}</span>
-          </button>
-        ))}
-      </div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ function StatFilterForm({ initialFilter, onSearch }) {
   const [startYearMonth, setStartYearMonth] = useState(initialFilter?.startYearMonth ?? '')
   const [endYearMonth, setEndYearMonth] = useState(initialFilter?.endYearMonth ?? '')
   const [categories, setCategories] = useState(initialFilter?.categories ?? [])
+  const [showCategories, setShowCategories] = useState(false)
 
   function toggleCategory(category) {
     setCategories((prev) =>
@@ -19,7 +20,25 @@ function StatFilterForm({ initialFilter, onSearch }) {
 
   return (
     <div className="card section">
-      <h3>조회 조건</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ margin: 0 }}>조회 조건</h3>
+        <button
+          type="button"
+          onClick={() => setShowCategories((prev) => !prev)}
+          aria-label="카테고리 필터"
+          style={{
+            border: 'none',
+            background: showCategories ? 'var(--accent-soft)' : 'transparent',
+            borderRadius: 'var(--radius-md)',
+            padding: '6px 10px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            color: 'var(--accent-strong)',
+          }}
+        >
+          ☰
+        </button>
+      </div>
       <div className="field-row">
         <div className="field">
           <label>시작 연월</label>
@@ -38,29 +57,30 @@ function StatFilterForm({ initialFilter, onSearch }) {
           />
         </div>
       </div>
-      <div className="field">
-        <label>카테고리</label>
-        <div className="checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={categories.length === 0}
-              onChange={() => setCategories([])}
-            />
-            전체
-          </label>
-          {CATEGORY_OPTIONS.map((option) => (
-            <label key={option}>
+      {showCategories && (
+        <div className="field">
+          <div className="checkbox-group">
+            <label>
               <input
                 type="checkbox"
-                checked={categories.includes(option)}
-                onChange={() => toggleCategory(option)}
+                checked={categories.length === 0}
+                onChange={() => setCategories([])}
               />
-              {option}
+              전체
             </label>
-          ))}
+            {CATEGORY_OPTIONS.map((option) => (
+              <label key={option}>
+                <input
+                  type="checkbox"
+                  checked={categories.includes(option)}
+                  onChange={() => toggleCategory(option)}
+                />
+                {option}
+              </label>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <button type="button" className="btn btn-primary" onClick={handleSearch}>
         조회
       </button>

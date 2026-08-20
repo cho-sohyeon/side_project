@@ -11,6 +11,8 @@ public record Expense(
 		LocalDate expenseDate,
 		String category,
 		boolean isTrendRelated,
+		String transactionType,
+		boolean isSettlement,
 		LocalDateTime createdAt
 ) {
 }

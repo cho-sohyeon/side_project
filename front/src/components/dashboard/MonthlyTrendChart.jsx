@@ -1,4 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { formatWon } from '../../utils/format'
 
 function MonthlyTrendChart({ monthlySummaries }) {
   if (monthlySummaries.length === 0) {
@@ -12,8 +13,8 @@ function MonthlyTrendChart({ monthlySummaries }) {
         <LineChart data={monthlySummaries}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="yearMonth" />
-          <YAxis />
-          <Tooltip />
+          <YAxis tickFormatter={(value) => formatWon(value)} width={80} />
+          <Tooltip formatter={(value) => formatWon(value)} />
           <Line type="monotone" dataKey="totalAmount" stroke="#E6A200" />
         </LineChart>
       </ResponsiveContainer>

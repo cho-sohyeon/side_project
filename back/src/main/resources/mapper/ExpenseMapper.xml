@@ -3,9 +3,25 @@
 <mapper namespace="com.trendledger.mapper.ExpenseMapper">
 
 	<insert id="insert" parameterType="com.trendledger.domain.ExpenseSaveRequest">
-		INSERT INTO expenses (expense_desc, amount, expense_date, category, is_trend_related)
-		VALUES (#{expenseDesc}, #{amount}, #{expenseDate}, #{category}, #{isTrendRelated})
+		INSERT INTO expenses (expense_desc, amount, expense_date, category, is_trend_related, transaction_type, is_settlement)
+		VALUES (#{expenseDesc}, #{amount}, #{expenseDate}, #{category}, #{isTrendRelated}, #{transactionType}, #{isSettlement})
 	</insert>
+
+	<update id="update">
+		UPDATE expenses
+		SET expense_desc = #{request.expenseDesc},
+			amount = #{request.amount},
+			expense_date = #{request.expenseDate},
+			category = #{request.category},
+			is_trend_related = #{request.isTrendRelated},
+			transaction_type = #{request.transactionType},
+			is_settlement = #{request.isSettlement}
+		WHERE expense_id = #{expenseId}
+	</update>
+
+	<delete id="delete">
+		DELETE FROM expenses WHERE expense_id = #{expenseId}
+	</delete>
 
 	<select id="findAll" resultType="com.trendledger.domain.Expense">
 		SELECT
@@ -15,9 +31,21 @@
 			expense_date     AS expenseDate,
 			category,
 			is_trend_related AS isTrendRelated,
+			transaction_type AS transactionType,
+			is_settlement    AS isSettlement,
 			created_at       AS createdAt
 		FROM expenses
 		ORDER BY expense_date DESC, expense_id DESC
+	</select>
+
+	<select id="getSummary" resultType="com.trendledger.domain.ExpenseSummaryResponse">
+		SELECT
+			COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN amount ELSE 0 END), 0) AS totalIncome,
+			COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' THEN amount ELSE 0 END), 0) AS totalExpense,
+			COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' AND is_settlement = false THEN amount ELSE 0 END), 0) AS netPersonalExpense,
+			COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' AND is_settlement = false THEN amount ELSE 0 END), 0) AS netPersonalIncome,
+			COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN amount ELSE -amount END), 0) AS balance
+		FROM expenses
 	</select>
 
 </mapper>

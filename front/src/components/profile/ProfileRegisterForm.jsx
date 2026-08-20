@@ -19,8 +19,10 @@ function ProfileRegisterForm({ mode, initialProfile, initialSpendingAnswers, ini
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
-  const isComplete =
-    spendingAnswers.every((a) => a !== null) && investmentAnswers.every((a) => a !== null)
+  const totalQuestions = spendingAnswers.length + investmentAnswers.length
+  const answeredCount =
+    spendingAnswers.filter((a) => a !== null).length + investmentAnswers.filter((a) => a !== null).length
+  const isComplete = answeredCount === totalQuestions
 
   async function handleSubmit() {
     if (!isComplete) {
@@ -50,7 +52,24 @@ function ProfileRegisterForm({ mode, initialProfile, initialSpendingAnswers, ini
 
   return (
     <div className="section">
-      <h2>{mode === 'update' ? '프로필 수정' : '프로필 등록'}</h2>
+      <div className="card">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <h2 style={{ margin: 0 }}>{mode === 'update' ? '프로필 수정' : '프로필 등록'}</h2>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent-strong)' }}>
+            {answeredCount}/{totalQuestions} 문항 응답
+          </span>
+        </div>
+        <div style={{ height: '6px', borderRadius: '999px', background: 'var(--accent-soft)', overflow: 'hidden' }}>
+          <div
+            style={{
+              width: `${totalQuestions === 0 ? 0 : (answeredCount / totalQuestions) * 100}%`,
+              height: '100%',
+              background: 'var(--accent-fill)',
+              transition: 'width 0.2s',
+            }}
+          />
+        </div>
+      </div>
       <BasicInfoForm value={basicInfo} onChange={setBasicInfo} />
       <SpendingHabitSurvey answers={spendingAnswers} onChange={setSpendingAnswers} />
       <InvestmentSurvey answers={investmentAnswers} onChange={setInvestmentAnswers} />

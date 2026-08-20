@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { saveExpense } from '../../api/expenseApi'
+import { formatWon } from '../../utils/format'
 
 const CATEGORY_OPTIONS = ['식비', '교통', '쇼핑', '주거', '여가', '금융/투자', '기타']
 
@@ -19,6 +20,8 @@ function ExpenseAnalysisPreview({ analysis, onSaved }) {
         expenseDate: analysis.expenseDate || null,
         category,
         isTrendRelated,
+        transactionType: analysis.transactionType || 'EXPENSE',
+        isSettlement: Boolean(analysis.isSettlement),
       })
       onSaved()
     } catch (e) {
@@ -32,7 +35,7 @@ function ExpenseAnalysisPreview({ analysis, onSaved }) {
     <div className="card section">
       <h3>분석 결과 확인</h3>
       <p>지출내역: {analysis.expenseDesc}</p>
-      <p>지출금액: {analysis.amount}</p>
+      <p>지출금액: {formatWon(analysis.amount)}</p>
       <div className="field">
         <label>카테고리</label>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
