@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.trendledger.domain.BudgetGoal;
 import com.trendledger.domain.BudgetGoalSaveRequest;
 import com.trendledger.mapper.BudgetGoalMapper;
+import com.trendledger.util.AmountValidator;
 
 @Service
 public class BudgetGoalService {
@@ -18,6 +19,7 @@ public class BudgetGoalService {
 	}
 
 	public void save(Long userId, BudgetGoalSaveRequest request) {
+		AmountValidator.validate(request.targetAmount());
 		budgetGoalMapper.upsert(userId, request.yearMonth(), request.targetAmount());
 	}
 

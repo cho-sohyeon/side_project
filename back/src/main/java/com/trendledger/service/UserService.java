@@ -13,6 +13,7 @@ import com.trendledger.domain.UserAccount;
 import com.trendledger.domain.UserLoginRequest;
 import com.trendledger.domain.UserRegisterRequest;
 import com.trendledger.mapper.BudgetGoalMapper;
+import com.trendledger.mapper.ChatMessageMapper;
 import com.trendledger.mapper.ExpenseMapper;
 import com.trendledger.mapper.FilterPresetMapper;
 import com.trendledger.mapper.InterestTopicMapper;
@@ -37,11 +38,12 @@ public class UserService {
 	private final ProfileMapper profileMapper;
 	private final SurveyResponseMapper surveyResponseMapper;
 	private final InterestTopicMapper interestTopicMapper;
+	private final ChatMessageMapper chatMessageMapper;
 
 	public UserService(UserMapper userMapper, SessionMapper sessionMapper, PasswordEncoder passwordEncoder,
 			ExpenseMapper expenseMapper, BudgetGoalMapper budgetGoalMapper, FilterPresetMapper filterPresetMapper,
 			ProfileMapper profileMapper, SurveyResponseMapper surveyResponseMapper,
-			InterestTopicMapper interestTopicMapper) {
+			InterestTopicMapper interestTopicMapper, ChatMessageMapper chatMessageMapper) {
 		this.userMapper = userMapper;
 		this.sessionMapper = sessionMapper;
 		this.passwordEncoder = passwordEncoder;
@@ -51,6 +53,7 @@ public class UserService {
 		this.profileMapper = profileMapper;
 		this.surveyResponseMapper = surveyResponseMapper;
 		this.interestTopicMapper = interestTopicMapper;
+		this.chatMessageMapper = chatMessageMapper;
 	}
 
 	public AuthResponse register(UserRegisterRequest request) {
@@ -132,6 +135,7 @@ public class UserService {
 		budgetGoalMapper.deleteAllByUser(userId);
 		filterPresetMapper.deleteAllByUser(userId);
 		interestTopicMapper.deleteAll(userId);
+		chatMessageMapper.deleteAllByUser(userId);
 		sessionMapper.deleteAllByUser(userId);
 		userMapper.delete(userId);
 	}

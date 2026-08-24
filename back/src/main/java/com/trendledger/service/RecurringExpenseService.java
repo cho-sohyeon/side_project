@@ -11,6 +11,7 @@ import com.trendledger.domain.RecurringExpense;
 import com.trendledger.domain.RecurringExpenseSaveRequest;
 import com.trendledger.mapper.ExpenseMapper;
 import com.trendledger.mapper.RecurringExpenseMapper;
+import com.trendledger.util.AmountValidator;
 
 @Service
 public class RecurringExpenseService {
@@ -26,6 +27,7 @@ public class RecurringExpenseService {
 	}
 
 	public void save(Long userId, RecurringExpenseSaveRequest request) {
+		AmountValidator.validate(request.amount());
 		recurringExpenseMapper.insert(userId, request);
 	}
 

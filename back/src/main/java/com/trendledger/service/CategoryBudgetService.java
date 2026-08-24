@@ -14,6 +14,7 @@ import com.trendledger.domain.CategorySummary;
 import com.trendledger.domain.ExpenseStatRequest;
 import com.trendledger.mapper.CategoryBudgetMapper;
 import com.trendledger.mapper.ExpenseStatMapper;
+import com.trendledger.util.AmountValidator;
 
 @Service
 public class CategoryBudgetService {
@@ -27,6 +28,7 @@ public class CategoryBudgetService {
 	}
 
 	public void save(Long userId, CategoryBudgetSaveRequest request) {
+		AmountValidator.validate(request.targetAmount());
 		categoryBudgetMapper.upsert(userId, request.yearMonth(), request.category(), request.targetAmount());
 	}
 

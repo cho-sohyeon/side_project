@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.ChatMessageMapper">
+
+	<insert id="insert">
+		INSERT INTO chat_messages (user_id, role, content) VALUES (#{userId}, #{role}, #{content})
+	</insert>
+
+	<select id="findByUser" resultType="com.trendledger.domain.ChatMessage">
+		SELECT message_id AS messageId, role, content, created_at AS createdAt
+		FROM chat_messages
+		WHERE user_id = #{userId}
+		ORDER BY message_id ASC
+	</select>
+
+	<select id="findRecentByUser" resultType="com.trendledger.domain.ChatMessage">
+		SELECT message_id AS messageId, role, content, created_at AS createdAt
+		FROM (
+			SELECT message_id, role, content, created_at
+			FROM chat_messages
+			WHERE user_id = #{userId}
+			ORDER BY message_id DESC
+			LIMIT #{limit}
+		) recent
+		ORDER BY message_id ASC
+	</select>
+
+	<delete id="deleteAllByUser">
+		DELETE FROM chat_messages WHERE user_id = #{userId}
+	</delete>
+
+</mapper>

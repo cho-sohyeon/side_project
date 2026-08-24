@@ -21,6 +21,7 @@ import com.trendledger.domain.BudgetGoal;
 import com.trendledger.domain.ExpenseStatRequest;
 import com.trendledger.domain.MonthlySummary;
 import com.trendledger.domain.NewsCard;
+import com.trendledger.domain.NewsInsight;
 import com.trendledger.domain.NewsSearchResult;
 import com.trendledger.domain.ProfileDetail;
 import com.trendledger.domain.TrendGuideResponse;
@@ -86,22 +87,12 @@ public class TrendGuideService {
 	public TrendGuideResponse getGuide(Long userId, boolean forceRefresh) {
 		YearMonth currentMonth = YearMonth.now();
 		String currentYearMonth = currentMonth.format(YEAR_MONTH_FORMAT);
-		String earliestYearMonth = currentMonth.minusMonths(3).format(YEAR_MONTH_FORMAT);
 
-		// 이번 달 실적 + 최근 3개월 기준선 계산에 필요한 월별 합계를 한 번의 조회로 가져온다
-		// (기존에는 findMonthlyTotal을 최대 4회 순차 호출했다).
-		Map<String, BigDecimal> monthlyTotals = expenseStatMapper
-				.findMonthlySummaries(new ExpenseStatRequest(userId, earliestYearMonth, currentYearMonth, null))
-				.stream()
-				.collect(Collectors.toMap(MonthlySummary::yearMonth, MonthlySummary::totalAmount));
+		TierContext ctx = resolveTierContext(userId, currentMonth, currentYearMonth);
+		String tier = ctx.tier();
+		BigDecimal savingsRate = ctx.savingsRate();
+		Optional<ProfileDetail> profile = ctx.profile();
 
-		BigDecimal actual = monthlyTotals.getOrDefault(currentYearMonth, BigDecimal.ZERO);
-		BigDecimal baseline = resolveBaseline(userId, currentMonth, currentYearMonth, monthlyTotals);
-
-		BigDecimal savingsRate = tierCalculator.calculateSavingsRate(baseline, actual);
-		String tier = tierCalculator.calculateTier(savingsRate);
-
-		Optional<ProfileDetail> profile = profileMapper.findByUserId(userId);
 		String cacheKey = "u" + userId + "|" + trendKeywordBuilder.buildCacheKey(tier, profile);
 
 		List<NewsCard> cards = forceRefresh
@@ -160,20 +151,29 @@ public class TrendGuideService {
 		String cacheKey = "u" + userId + "|" + INTEREST_ISSUE_CACHE_PREFIX
 				+ topics.stream().sorted().collect(Collectors.joining(","));
 
+		YearMonth currentMonth = YearMonth.now();
+		TierContext ctx = resolveTierContext(userId, currentMonth, currentMonth.format(YEAR_MONTH_FORMAT));
+
 		if (forceRefresh) {
-			return fetchAndCacheInterestIssues(cacheKey, keywords);
+			return fetchAndCacheInterestIssues(cacheKey, keywords, ctx);
 		}
 		return trendGuideCacheMapper.findValidCardsJson(cacheKey)
 				.map(this::deserializeCards)
-				.orElseGet(() -> fetchAndCacheInterestIssues(cacheKey, keywords));
+				.orElseGet(() -> fetchAndCacheInterestIssues(cacheKey, keywords, ctx));
 	}
 
-	private List<NewsCard> fetchAndCacheInterestIssues(String cacheKey, List<String> keywords) {
+	private List<NewsCard> fetchAndCacheInterestIssues(String cacheKey, List<String> keywords, TierContext ctx) {
 		int perKeyword = (TOTAL_CARDS / keywords.size()) + 1;
+
+		// 토픽별 네이버 검색을 순차 호출하면 토픽 수만큼 지연이 누적되므로 병렬로 조회한다.
+		List<CompletableFuture<NewsSearchResult>> searches = keywords.stream()
+				.map(keyword -> CompletableFuture.supplyAsync(
+						() -> naverNewsClient.searchNews(keyword, perKeyword, "date"), cardBuildExecutor))
+				.toList();
+
 		Map<String, Map<String, String>> byLink = new LinkedHashMap<>();
-		for (String keyword : keywords) {
-			NewsSearchResult result = naverNewsClient.searchNews(keyword, perKeyword, "date");
-			for (Map<String, String> item : result.items()) {
+		for (CompletableFuture<NewsSearchResult> search : searches) {
+			for (Map<String, String> item : search.join().items()) {
 				byLink.putIfAbsent(item.get("link"), item);
 			}
 		}
@@ -182,11 +182,40 @@ public class TrendGuideService {
 			return List.of();
 		}
 
+		String investmentPropensityType = ctx.profile().map(ProfileDetail::investmentPropensityType).orElse("정보 없음");
+		String spendingHabitType = ctx.profile().map(ProfileDetail::spendingHabitType).orElse("정보 없음");
+		String ageHouseholdType = ctx.profile().map(ProfileDetail::ageHouseholdType).orElse("정보 없음");
+
 		List<NewsCard> cards = buildCardsInParallel(
-				items, "일반", "정보 없음", "정보 없음", "정보 없음");
+				items, ctx.tier(), investmentPropensityType, spendingHabitType, ageHouseholdType);
 
 		trendGuideCacheMapper.upsert(cacheKey, "INTEREST", serializeCards(cards));
 		return cards;
+	}
+
+	/**
+	 * 이번 달 절약 티어 + 사용자 프로필을 한 번에 계산해 getGuide/getInterestIssues에서 공유한다.
+	 * (기존에는 getInterestIssues가 "일반"/"정보 없음" 같은 고정값을 써서 개인화가 실제로 반영되지 않았다.)
+	 */
+	private TierContext resolveTierContext(Long userId, YearMonth currentMonth, String currentYearMonth) {
+		String earliestYearMonth = currentMonth.minusMonths(3).format(YEAR_MONTH_FORMAT);
+
+		Map<String, BigDecimal> monthlyTotals = expenseStatMapper
+				.findMonthlySummaries(new ExpenseStatRequest(userId, earliestYearMonth, currentYearMonth, null))
+				.stream()
+				.collect(Collectors.toMap(MonthlySummary::yearMonth, MonthlySummary::totalAmount));
+
+		BigDecimal actual = monthlyTotals.getOrDefault(currentYearMonth, BigDecimal.ZERO);
+		BigDecimal baseline = resolveBaseline(userId, currentMonth, currentYearMonth, monthlyTotals);
+
+		BigDecimal savingsRate = tierCalculator.calculateSavingsRate(baseline, actual);
+		String tier = tierCalculator.calculateTier(savingsRate);
+		Optional<ProfileDetail> profile = profileMapper.findByUserId(userId);
+
+		return new TierContext(tier, savingsRate, profile);
+	}
+
+	private record TierContext(String tier, BigDecimal savingsRate, Optional<ProfileDetail> profile) {
 	}
 
 	private BigDecimal resolveBaseline(Long userId, YearMonth currentMonth, String currentYearMonth, Map<String, BigDecimal> monthlyTotals) {
@@ -211,15 +240,19 @@ public class TrendGuideService {
 		List<String> primaryCandidates = priorityKeywords.isEmpty()
 				? List.of()
 				: List.of(priorityKeywords.get(0));
-		NewsSearchResult resultA = searchWithFallback(tierKeyword, primaryCandidates, PRIMARY_QUERY_MAX_CARDS);
 
 		// 검색 B: 나머지 축(연령대/가구유형, 청약통장, 독립여부, 소비습관) — 결과 다양성 확보용
 		List<String> secondaryCandidates = priorityKeywords.size() > 1
 				? priorityKeywords.subList(1, priorityKeywords.size())
 				: List.of();
-		NewsSearchResult resultB = searchWithFallback(tierKeyword, secondaryCandidates, TOTAL_CARDS - PRIMARY_QUERY_MAX_CARDS);
 
-		List<Map<String, String>> merged = mergeAndDedupe(resultA.items(), resultB.items(), TOTAL_CARDS);
+		// 두 검색은 서로 독립적이라 순차 호출 대신 병렬로 실행해 지연을 절반으로 줄인다.
+		CompletableFuture<NewsSearchResult> futureA = CompletableFuture.supplyAsync(
+				() -> searchWithFallback(tierKeyword, primaryCandidates, PRIMARY_QUERY_MAX_CARDS), cardBuildExecutor);
+		CompletableFuture<NewsSearchResult> futureB = CompletableFuture.supplyAsync(
+				() -> searchWithFallback(tierKeyword, secondaryCandidates, TOTAL_CARDS - PRIMARY_QUERY_MAX_CARDS), cardBuildExecutor);
+
+		List<Map<String, String>> merged = mergeAndDedupe(futureA.join().items(), futureB.join().items(), TOTAL_CARDS);
 
 		String investmentPropensityType = profile.map(ProfileDetail::investmentPropensityType).orElse("정보 없음");
 		String spendingHabitType = profile.map(ProfileDetail::spendingHabitType).orElse("정보 없음");
@@ -243,11 +276,11 @@ public class TrendGuideService {
 				.map(item -> CompletableFuture.supplyAsync(() -> {
 					String title = stripHtml(item.get("title"));
 					String description = stripHtml(item.get("description"));
-					String insight = openAiClient.generatePersonalizedInsight(
+					NewsInsight insight = openAiClient.generatePersonalizedInsight(
 							title, description, tier, investmentPropensityType, spendingHabitType, ageHouseholdType);
 					String link = item.get("link");
 					String imageUrl = ogImageExtractor.extract(link);
-					return new NewsCard(title, insight, link, imageUrl);
+					return new NewsCard(title, insight.headline(), link, imageUrl, insight.recommendation());
 				}, cardBuildExecutor))
 				.toList();
 

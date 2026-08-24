@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getBudgetGoal, saveBudgetGoal } from '../../api/budgetGoalApi'
+import { getExpenses } from '../../api/expenseApi'
 import { formatWon } from '../../utils/format'
 import AmountInput from '../common/AmountInput'
 import CategoryBudgetForm from './CategoryBudgetForm'
@@ -18,6 +19,13 @@ const TIERS = [
   { key: 'SILVER', label: 'Silver', maxRate: 0.10 },
   { key: 'BRONZE', label: 'Bronze', maxRate: 0 },
 ]
+
+function currentAchievedTier(targetAmount, spent) {
+  if (!targetAmount || targetAmount <= 0) return null
+  if (spent > targetAmount) return null
+  const achieved = TIERS.find((tier) => spent <= targetAmount * (1 - tier.maxRate))
+  return achieved ?? TIERS[TIERS.length - 1]
+}
 
 function TierThresholdGuide({ targetAmount }) {
   const amount = Number(targetAmount)
@@ -93,14 +101,23 @@ function BudgetGoalForm({ onSaved }) {
   const [existingGoal, setExistingGoal] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const [spent, setSpent] = useState(0)
+  const [showDetail, setShowDetail] = useState(false)
 
   async function refresh() {
     try {
-      const goal = await getBudgetGoal(yearMonth)
+      const [goal, expenses] = await Promise.all([
+        getBudgetGoal(yearMonth),
+        getExpenses().catch(() => []),
+      ])
       setExistingGoal(goal)
       if (goal) {
         setTargetAmount(String(Math.round(Number(goal.targetAmount))))
       }
+      const thisMonthSpend = expenses
+        .filter((e) => e.transactionType !== 'INCOME' && !e.isSettlement && e.expenseDate.slice(0, 7) === yearMonth)
+        .reduce((sum, e) => sum + Number(e.amount), 0)
+      setSpent(thisMonthSpend)
     } catch (e) {
       setError(e.message)
     }
@@ -125,11 +142,12 @@ function BudgetGoalForm({ onSaved }) {
     }
   }
 
+  const achievedTier = existingGoal ? currentAchievedTier(Number(existingGoal.targetAmount), spent) : null
+
   return (
     <div className="section">
       <div className="card">
         <h3>이번 달({yearMonth}) 예산 목표</h3>
-        {existingGoal && <p className="muted">현재 설정된 목표: {formatWon(existingGoal.targetAmount)}</p>}
         <div className="field">
           <label>목표 금액</label>
           <AmountInput value={targetAmount} onChange={setTargetAmount} placeholder="예: 500,000" />
@@ -140,9 +158,52 @@ function BudgetGoalForm({ onSaved }) {
         {error && <p className="error-text">{error}</p>}
       </div>
 
-      <TierThresholdGuide targetAmount={targetAmount} />
-      <CategoryBudgetForm />
-      <RecurringExpenseManager />
+      {existingGoal && (
+        <button
+          type="button"
+          onClick={() => setShowDetail((v) => !v)}
+          className="card"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <div>
+            <p style={{ margin: '0 0 4px', fontSize: '12px', fontWeight: 700, color: 'var(--color-text-muted)' }}>
+              내 목표
+            </p>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 800 }}>
+              {formatWon(spent)} / {formatWon(existingGoal.targetAmount)}
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              style={{
+                padding: '4px 12px',
+                borderRadius: '999px',
+                background: achievedTier ? 'var(--accent-fill)' : 'var(--color-border)',
+                color: achievedTier ? 'var(--accent-strong)' : 'var(--color-text-muted)',
+                fontSize: '12px',
+                fontWeight: 700,
+              }}
+            >
+              {achievedTier ? achievedTier.label : '등급 없음'}
+            </span>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>{showDetail ? '▲' : '▼'}</span>
+          </div>
+        </button>
+      )}
+
+      {showDetail && (
+        <>
+          <TierThresholdGuide targetAmount={targetAmount} />
+          <CategoryBudgetForm />
+          <RecurringExpenseManager />
+        </>
+      )}
     </div>
   )
 }

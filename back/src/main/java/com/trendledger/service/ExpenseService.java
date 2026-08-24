@@ -11,6 +11,7 @@ import com.trendledger.domain.ExpenseAnalyzeResponse;
 import com.trendledger.domain.ExpenseSaveRequest;
 import com.trendledger.domain.ExpenseSummaryResponse;
 import com.trendledger.mapper.ExpenseMapper;
+import com.trendledger.util.AmountValidator;
 
 @Service
 public class ExpenseService {
@@ -28,6 +29,7 @@ public class ExpenseService {
 	}
 
 	public void save(Long userId, ExpenseSaveRequest request) {
+		AmountValidator.validate(request.amount());
 		ExpenseSaveRequest resolved = new ExpenseSaveRequest(
 				request.expenseDesc(),
 				request.amount(),
@@ -44,6 +46,7 @@ public class ExpenseService {
 	}
 
 	public void update(Long userId, Long expenseId, ExpenseSaveRequest request) {
+		AmountValidator.validate(request.amount());
 		ExpenseSaveRequest resolved = new ExpenseSaveRequest(
 				request.expenseDesc(),
 				request.amount(),

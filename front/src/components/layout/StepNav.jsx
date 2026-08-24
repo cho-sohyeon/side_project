@@ -7,6 +7,7 @@ const ICONS = {
   expense: '✏️',
   savings: '💰',
   trend: '📈',
+  chat: '💬',
 }
 
 function StepNav({ steps, currentIndex, onSelect }) {

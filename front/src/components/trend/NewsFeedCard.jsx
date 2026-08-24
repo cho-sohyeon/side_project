@@ -23,7 +23,7 @@ function NewsFeedCard({ card, tier }) {
         position: 'relative',
         flex: '0 0 auto',
         width: '260px',
-        height: '380px',
+        height: card.recommendation ? '430px' : '380px',
         borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
         scrollSnapAlign: 'start',
@@ -71,6 +71,23 @@ function NewsFeedCard({ card, tier }) {
         >
           {card.summary}
         </p>
+        {card.recommendation && (
+          <p
+            style={{
+              margin: '0 0 10px',
+              padding: '8px 10px',
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgba(255,255,255,0.18)',
+              fontSize: '12px',
+              fontWeight: 600,
+              lineHeight: 1.4,
+              color: '#FFFFFF',
+              wordBreak: 'keep-all',
+            }}
+          >
+            💡 {card.recommendation}
+          </p>
+        )}
         <p style={{ margin: '0 0 4px', fontSize: 'var(--font-size-body)', opacity: 0.85, color: '#FFFFFF' }}>{card.title}</p>
         <span style={{ fontSize: 'var(--font-size-caption)', opacity: 0.7, color: '#FFFFFF' }}>{extractDomain(card.url)}</span>
       </div>

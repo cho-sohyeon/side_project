@@ -12,6 +12,7 @@ import SavingsSummary from './components/trend/SavingsSummary'
 import TrendGuide from './components/trend/TrendGuide'
 import StepNav from './components/layout/StepNav'
 import AuthGate from './components/auth/AuthGate'
+import ChatView from './components/chat/ChatView'
 import { getExpenses } from './api/expenseApi'
 import { getProfile } from './api/profileApi'
 import { logout as logoutApi } from './api/authApi'
@@ -21,10 +22,10 @@ import './App.css'
 
 const STEPS = [
   { key: 'home', label: '홈' },
-  { key: 'goal', label: '목표' },
+  { key: 'goal', label: '목표·절약' },
   { key: 'expense', label: '거래입력' },
-  { key: 'savings', label: '절약확인' },
   { key: 'trend', label: '투자트렌드' },
+  { key: 'chat', label: 'Ledger' },
   { key: 'profile', label: '프로필' },
 ]
 
@@ -33,6 +34,7 @@ function App() {
   const [analysis, setAnalysis] = useState(null)
   const [expenses, setExpenses] = useState([])
   const [formKey, setFormKey] = useState(0)
+  const [showDashboard, setShowDashboard] = useState(false)
   // 'loading' | 'auth'(로그인 필요) | 'onboarding'(로그인은 됐지만 프로필 미등록) | 'active'
   const [sessionState, setSessionState] = useState('loading')
 
@@ -154,7 +156,21 @@ function App() {
 
           {currentStep === 'profile' && <ProfileView onLogout={handleLogout} />}
 
-          {currentStep === 'goal' && <BudgetGoalForm />}
+          {currentStep === 'goal' && (
+            <>
+              <BudgetGoalForm />
+              <SavingsSummary />
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setShowDashboard((v) => !v)}
+                style={{ fontSize: '12px' }}
+              >
+                📊 상세 대시보드 {showDashboard ? '접기' : '보기'}
+              </button>
+              {showDashboard && <Dashboard />}
+            </>
+          )}
 
           {currentStep === 'expense' && (
             <>
@@ -167,16 +183,11 @@ function App() {
             </>
           )}
 
-          {currentStep === 'savings' && (
-            <>
-              <SavingsSummary />
-              <Dashboard />
-            </>
-          )}
-
           {currentStep === 'trend' && (
             <TrendGuide onGoToProfile={() => goToStep('profile')} />
           )}
+
+          {currentStep === 'chat' && <ChatView />}
         </section>
 
         <StepNav steps={STEPS} currentIndex={stepIndex} onSelect={setStepIndex} />

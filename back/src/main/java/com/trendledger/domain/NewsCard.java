@@ -4,6 +4,7 @@ public record NewsCard(
 		String title,
 		String summary,
 		String url,
-		String imageUrl
+		String imageUrl,
+		String recommendation
 ) {
 }
