@@ -3,6 +3,7 @@ package com.trendledger.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,13 +23,13 @@ public class BudgetGoalController {
 	}
 
 	@PostMapping
-	public void save(@RequestBody BudgetGoalSaveRequest request) {
-		budgetGoalService.save(request);
+	public void save(@RequestAttribute("userId") Long userId, @RequestBody BudgetGoalSaveRequest request) {
+		budgetGoalService.save(userId, request);
 	}
 
 	@GetMapping("/{yearMonth}")
-	public BudgetGoal find(@PathVariable String yearMonth) {
-		return budgetGoalService.find(yearMonth).orElse(null);
+	public BudgetGoal find(@RequestAttribute("userId") Long userId, @PathVariable String yearMonth) {
+		return budgetGoalService.find(userId, yearMonth).orElse(null);
 	}
 
 }

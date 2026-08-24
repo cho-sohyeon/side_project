@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.SessionMapper">
+
+	<insert id="insert">
+		INSERT INTO sessions (session_token, user_id, expires_at)
+		VALUES (#{token}, #{userId}, now() + interval '30 days')
+	</insert>
+
+	<select id="findUserIdByToken" resultType="java.lang.Long">
+		SELECT user_id FROM sessions WHERE session_token = #{token} AND expires_at > now()
+	</select>
+
+	<delete id="deleteByToken">
+		DELETE FROM sessions WHERE session_token = #{token}
+	</delete>
+
+	<delete id="deleteAllByUser">
+		DELETE FROM sessions WHERE user_id = #{userId}
+	</delete>
+
+</mapper>

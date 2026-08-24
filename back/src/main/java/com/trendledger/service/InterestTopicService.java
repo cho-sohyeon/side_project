@@ -15,13 +15,13 @@ public class InterestTopicService {
 		this.interestTopicMapper = interestTopicMapper;
 	}
 
-	public List<String> getSelectedTopics() {
-		return interestTopicMapper.findAll();
+	public List<String> getSelectedTopics(Long userId) {
+		return interestTopicMapper.findAll(userId);
 	}
 
-	public void saveTopics(List<String> topicCodes) {
-		interestTopicMapper.deleteAll();
-		topicCodes.forEach(interestTopicMapper::insert);
+	public void saveTopics(Long userId, List<String> topicCodes) {
+		interestTopicMapper.deleteAll(userId);
+		topicCodes.forEach(code -> interestTopicMapper.insert(userId, code));
 	}
 
 }

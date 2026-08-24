@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,41 +41,42 @@ public class ExpenseController {
 	}
 
 	@PostMapping
-	public void save(@RequestBody ExpenseSaveRequest request) {
-		expenseService.save(request);
+	public void save(@RequestAttribute("userId") Long userId, @RequestBody ExpenseSaveRequest request) {
+		expenseService.save(userId, request);
 	}
 
 	@PostMapping("/bulk")
-	public void saveBulk(@RequestBody List<ExpenseSaveRequest> requests) {
-		expenseService.saveBulk(requests);
+	public void saveBulk(@RequestAttribute("userId") Long userId, @RequestBody List<ExpenseSaveRequest> requests) {
+		expenseService.saveBulk(userId, requests);
 	}
 
 	@PutMapping("/{expenseId}")
-	public void update(@PathVariable Long expenseId, @RequestBody ExpenseSaveRequest request) {
-		expenseService.update(expenseId, request);
+	public void update(@RequestAttribute("userId") Long userId, @PathVariable Long expenseId, @RequestBody ExpenseSaveRequest request) {
+		expenseService.update(userId, expenseId, request);
 	}
 
 	@DeleteMapping("/{expenseId}")
-	public void delete(@PathVariable Long expenseId) {
-		expenseService.delete(expenseId);
+	public void delete(@RequestAttribute("userId") Long userId, @PathVariable Long expenseId) {
+		expenseService.delete(userId, expenseId);
 	}
 
 	@GetMapping
-	public List<Expense> list() {
-		return expenseService.findAll();
+	public List<Expense> list(@RequestAttribute("userId") Long userId) {
+		return expenseService.findAll(userId);
 	}
 
 	@GetMapping("/summary")
-	public ExpenseSummaryResponse summary() {
-		return expenseService.getSummary();
+	public ExpenseSummaryResponse summary(@RequestAttribute("userId") Long userId) {
+		return expenseService.getSummary(userId);
 	}
 
 	@GetMapping("/stats")
 	public ExpenseStatResponse stats(
+			@RequestAttribute("userId") Long userId,
 			@RequestParam(required = false) String startYearMonth,
 			@RequestParam(required = false) String endYearMonth,
 			@RequestParam(required = false) List<String> categories) {
-		return expenseStatService.getStats(new ExpenseStatRequest(startYearMonth, endYearMonth, categories));
+		return expenseStatService.getStats(new ExpenseStatRequest(userId, startYearMonth, endYearMonth, categories));
 	}
 
 }

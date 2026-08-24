@@ -23,6 +23,24 @@ function Home({ onNavigate }) {
   const [todayCards, setTodayCards] = useState([])
   const [interestCards, setInterestCards] = useState([])
   const [refreshKey, setRefreshKey] = useState(0)
+  const [todayLoading, setTodayLoading] = useState(false)
+  const [interestLoading, setInterestLoading] = useState(false)
+
+  function refreshTodayIssues() {
+    setTodayLoading(true)
+    getTodayIssues(true)
+      .then(setTodayCards)
+      .catch(() => {})
+      .finally(() => setTodayLoading(false))
+  }
+
+  function refreshInterestIssues() {
+    setInterestLoading(true)
+    getInterestIssues(true)
+      .then(setInterestCards)
+      .catch(() => {})
+      .finally(() => setInterestLoading(false))
+  }
 
   function refreshSummary() {
     getExpenseSummary()
@@ -111,18 +129,40 @@ function Home({ onNavigate }) {
 
       {todayCards.length > 0 && (
         <div>
-          <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text)' }}>
-            오늘의 트렌드 이슈
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 8px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>
+              오늘의 트렌드 이슈
+            </p>
+            <button
+              type="button"
+              onClick={refreshTodayIssues}
+              disabled={todayLoading}
+              aria-label="새로고침"
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '15px', opacity: 0.45, lineHeight: 1 }}
+            >
+              {todayLoading ? '⏳' : '🔄'}
+            </button>
+          </div>
           <NewsCardList cards={todayCards} tier="TODAY" />
         </div>
       )}
 
       {interestCards.length > 0 && (
         <div>
-          <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text)' }}>
-            📌 관심 토픽 뉴스
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 8px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>
+              📌 관심 토픽 뉴스
+            </p>
+            <button
+              type="button"
+              onClick={refreshInterestIssues}
+              disabled={interestLoading}
+              aria-label="새로고침"
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '15px', opacity: 0.45, lineHeight: 1 }}
+            >
+              {interestLoading ? '⏳' : '🔄'}
+            </button>
+          </div>
           <NewsCardList cards={interestCards} tier="HOUSING" />
         </div>
       )}

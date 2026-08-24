@@ -1,7 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { apiFetch } from './httpClient'
 
 export async function getBudgetGoal(yearMonth) {
-  const response = await fetch(`${BASE_URL}/api/budget-goals/${yearMonth}`)
+  const response = await apiFetch(`/api/budget-goals/${yearMonth}`)
   if (!response.ok) {
     throw new Error(`예산 목표 조회 실패 (status ${response.status})`)
   }
@@ -10,9 +10,8 @@ export async function getBudgetGoal(yearMonth) {
 }
 
 export async function saveBudgetGoal({ yearMonth, targetAmount }) {
-  const response = await fetch(`${BASE_URL}/api/budget-goals`, {
+  const response = await apiFetch('/api/budget-goals', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ yearMonth, targetAmount }),
   })
   if (!response.ok) {

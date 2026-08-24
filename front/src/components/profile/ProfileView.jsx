@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import ProfileRegisterForm from './ProfileRegisterForm'
 import { getProfile } from '../../api/profileApi'
+import { getNickname } from '../../api/httpClient'
+import { updateNickname } from '../../api/accountApi'
+import AccountSettings from './AccountSettings'
 import { AGE_HOUSEHOLD_OPTIONS, LIVING_TYPE_OPTIONS } from './BasicInfoForm'
 
 const SPENDING_HABIT_INFO = {
@@ -25,10 +28,14 @@ function labelOf(options, value) {
   return options.find((o) => o.value === value)?.label ?? value
 }
 
-function ProfileView() {
+function ProfileView({ onLogout }) {
   const [response, setResponse] = useState(null)
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState(null)
+  const [editingNickname, setEditingNickname] = useState(false)
+  const [nicknameInput, setNicknameInput] = useState('')
+  const [savingNickname, setSavingNickname] = useState(false)
+  const [nicknameError, setNicknameError] = useState(null)
 
   async function refresh() {
     setError(null)
@@ -47,6 +54,25 @@ function ProfileView() {
   function handleSaved() {
     setEditing(false)
     refresh()
+  }
+
+  function startEditingNickname() {
+    setNicknameInput(getNickname() ?? '')
+    setNicknameError(null)
+    setEditingNickname(true)
+  }
+
+  async function handleSaveNickname() {
+    setNicknameError(null)
+    setSavingNickname(true)
+    try {
+      await updateNickname(nicknameInput)
+      setEditingNickname(false)
+    } catch (e) {
+      setNicknameError(e.message)
+    } finally {
+      setSavingNickname(false)
+    }
   }
 
   if (error) {
@@ -112,20 +138,74 @@ function ProfileView() {
             🙂
           </div>
           <div>
-            <p style={{ margin: '0 0 2px', fontSize: '12px', fontWeight: 700, opacity: 0.75 }}>내 프로필</p>
+            {editingNickname ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                <input
+                  type="text"
+                  value={nicknameInput}
+                  onChange={(e) => setNicknameInput(e.target.value)}
+                  autoFocus
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1.5px solid var(--accent-strong)',
+                    width: '90px',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveNickname}
+                  disabled={savingNickname || !nicknameInput}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  ✅
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingNickname(false)}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <p
+                onClick={startEditingNickname}
+                style={{ margin: '0 0 2px', fontSize: '12px', fontWeight: 700, opacity: 0.75, cursor: 'pointer' }}
+              >
+                {getNickname() ?? '내 프로필'} ✏️
+              </p>
+            )}
+            {nicknameError && (
+              <p className="error-text" style={{ margin: '0 0 4px', fontSize: '11px' }}>{nicknameError}</p>
+            )}
             <p style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
               {labelOf(AGE_HOUSEHOLD_OPTIONS, profile.ageHouseholdType)} · {spending?.label}
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => setEditing(true)}
-          style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'transparent' }}
-        >
-          수정
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setEditing(true)}
+            style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'transparent' }}
+          >
+            수정
+          </button>
+          {onLogout && (
+            <button
+              type="button"
+              className="btn"
+              onClick={onLogout}
+              style={{ background: 'transparent', borderColor: 'transparent', color: 'var(--accent-strong)', fontSize: '12px' }}
+            >
+              로그아웃
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="card">
@@ -167,6 +247,8 @@ function ProfileView() {
           <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: 0, wordBreak: 'keep-all' }}>{investment?.desc}</p>
         </div>
       </div>
+
+      <AccountSettings onAccountDeleted={onLogout} />
     </section>
   )
 }

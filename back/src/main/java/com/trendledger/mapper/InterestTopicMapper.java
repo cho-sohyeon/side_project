@@ -8,10 +8,10 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface InterestTopicMapper {
 
-	List<String> findAll();
+	List<String> findAll(@Param("userId") Long userId);
 
-	void deleteAll();
+	void deleteAll(@Param("userId") Long userId);
 
-	void insert(@Param("topicCode") String topicCode);
+	void insert(@Param("userId") Long userId, @Param("topicCode") String topicCode);
 
 }

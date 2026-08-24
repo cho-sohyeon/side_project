@@ -1,9 +1,8 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { apiFetch } from './httpClient'
 
 export async function analyzeExpense({ expenseDesc, amount, expenseDate }) {
-  const response = await fetch(`${BASE_URL}/api/expenses/analyze`, {
+  const response = await apiFetch('/api/expenses/analyze', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ expenseDesc, amount, expenseDate: expenseDate || null }),
   })
   if (!response.ok) {
@@ -13,9 +12,8 @@ export async function analyzeExpense({ expenseDesc, amount, expenseDate }) {
 }
 
 export async function saveExpense(expense) {
-  const response = await fetch(`${BASE_URL}/api/expenses`, {
+  const response = await apiFetch('/api/expenses', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(expense),
   })
   if (!response.ok) {
@@ -24,9 +22,8 @@ export async function saveExpense(expense) {
 }
 
 export async function saveExpensesBulk(expenses) {
-  const response = await fetch(`${BASE_URL}/api/expenses/bulk`, {
+  const response = await apiFetch('/api/expenses/bulk', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(expenses),
   })
   if (!response.ok) {
@@ -35,9 +32,8 @@ export async function saveExpensesBulk(expenses) {
 }
 
 export async function updateExpense(expenseId, expense) {
-  const response = await fetch(`${BASE_URL}/api/expenses/${expenseId}`, {
+  const response = await apiFetch(`/api/expenses/${expenseId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(expense),
   })
   if (!response.ok) {
@@ -46,7 +42,7 @@ export async function updateExpense(expenseId, expense) {
 }
 
 export async function deleteExpense(expenseId) {
-  const response = await fetch(`${BASE_URL}/api/expenses/${expenseId}`, {
+  const response = await apiFetch(`/api/expenses/${expenseId}`, {
     method: 'DELETE',
   })
   if (!response.ok) {
@@ -55,7 +51,7 @@ export async function deleteExpense(expenseId) {
 }
 
 export async function getExpenses() {
-  const response = await fetch(`${BASE_URL}/api/expenses`)
+  const response = await apiFetch('/api/expenses')
   if (!response.ok) {
     throw new Error(`목록 조회 실패 (status ${response.status})`)
   }
@@ -63,7 +59,7 @@ export async function getExpenses() {
 }
 
 export async function getExpenseSummary() {
-  const response = await fetch(`${BASE_URL}/api/expenses/summary`)
+  const response = await apiFetch('/api/expenses/summary')
   if (!response.ok) {
     throw new Error(`잔액 조회 실패 (status ${response.status})`)
   }
@@ -77,7 +73,7 @@ export async function getExpenseStats({ startYearMonth, endYearMonth, categories
   if (categories && categories.length > 0) {
     categories.forEach((c) => params.append('categories', c))
   }
-  const response = await fetch(`${BASE_URL}/api/expenses/stats?${params.toString()}`)
+  const response = await apiFetch(`/api/expenses/stats?${params.toString()}`)
   if (!response.ok) {
     throw new Error(`통계 조회 실패 (status ${response.status})`)
   }
@@ -85,9 +81,8 @@ export async function getExpenseStats({ startYearMonth, endYearMonth, categories
 }
 
 export async function savePreset(preset) {
-  const response = await fetch(`${BASE_URL}/api/filter-presets`, {
+  const response = await apiFetch('/api/filter-presets', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(preset),
   })
   if (!response.ok) {
@@ -96,7 +91,7 @@ export async function savePreset(preset) {
 }
 
 export async function getPresets() {
-  const response = await fetch(`${BASE_URL}/api/filter-presets`)
+  const response = await apiFetch('/api/filter-presets')
   if (!response.ok) {
     throw new Error(`프리셋 목록 조회 실패 (status ${response.status})`)
   }

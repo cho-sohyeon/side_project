@@ -17,12 +17,12 @@ public class FilterPresetService {
 		this.filterPresetMapper = filterPresetMapper;
 	}
 
-	public void save(FilterPresetSaveRequest request) {
-		filterPresetMapper.insert(request);
+	public void save(Long userId, FilterPresetSaveRequest request) {
+		filterPresetMapper.insert(userId, request);
 	}
 
-	public List<FilterPreset> findAll() {
-		return filterPresetMapper.findAll();
+	public List<FilterPreset> findAll(Long userId) {
+		return filterPresetMapper.findAll(userId);
 	}
 
 }

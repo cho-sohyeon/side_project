@@ -32,8 +32,8 @@ public class ProfileService {
 		this.surveyTypeCalculator = surveyTypeCalculator;
 	}
 
-	public Optional<ProfileDetail> getProfile() {
-		return profileMapper.findOne();
+	public Optional<ProfileDetail> getProfile(Long userId) {
+		return profileMapper.findByUserId(userId);
 	}
 
 	public List<String> getLatestAnswers(Long profileId, String surveyType, List<String> questionCodes) {
@@ -51,25 +51,26 @@ public class ProfileService {
 		return INVESTMENT_QUESTION_CODES;
 	}
 
-	public void register(ProfileRegisterRequest request) {
-		if (profileMapper.findOne().isPresent()) {
+	public void register(Long userId, ProfileRegisterRequest request) {
+		if (profileMapper.findByUserId(userId).isPresent()) {
 			throw new IllegalStateException("이미 프로필이 등록되어 있습니다.");
 		}
-		upsert(null, request);
+		upsert(userId, null, request);
 	}
 
-	public void update(ProfileRegisterRequest request) {
-		ProfileDetail existing = profileMapper.findOne()
+	public void update(Long userId, ProfileRegisterRequest request) {
+		ProfileDetail existing = profileMapper.findByUserId(userId)
 				.orElseThrow(() -> new IllegalStateException("등록된 프로필이 없습니다."));
-		upsert(existing.profileId(), request);
+		upsert(userId, existing.profileId(), request);
 	}
 
-	private void upsert(Long profileId, ProfileRegisterRequest request) {
+	private void upsert(Long userId, Long profileId, ProfileRegisterRequest request) {
 		String spendingHabitType = surveyTypeCalculator.calculateSpendingHabitType(request.spendingHabitAnswers());
 		String investmentPropensityType = surveyTypeCalculator.calculateInvestmentPropensityType(request.investmentAnswers());
 
 		ProfileUpsertRecord record = new ProfileUpsertRecord(
 				profileId,
+				userId,
 				request.ageHouseholdType(),
 				request.hasSubscriptionAccount(),
 				request.livingType(),
@@ -83,7 +84,7 @@ public class ProfileService {
 			profileMapper.update(record);
 		}
 
-		Long savedProfileId = profileMapper.findOne()
+		Long savedProfileId = profileMapper.findByUserId(userId)
 				.orElseThrow(() -> new IllegalStateException("프로필 저장에 실패했습니다."))
 				.profileId();
 

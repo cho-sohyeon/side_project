@@ -27,7 +27,7 @@ public class ExpenseService {
 		return openAiClient.classify(request.expenseDesc());
 	}
 
-	public void save(ExpenseSaveRequest request) {
+	public void save(Long userId, ExpenseSaveRequest request) {
 		ExpenseSaveRequest resolved = new ExpenseSaveRequest(
 				request.expenseDesc(),
 				request.amount(),
@@ -36,14 +36,14 @@ public class ExpenseService {
 				request.isTrendRelated(),
 				request.transactionType() != null ? request.transactionType() : "EXPENSE",
 				request.isSettlement());
-		expenseMapper.insert(resolved);
+		expenseMapper.insert(userId, resolved);
 	}
 
-	public void saveBulk(List<ExpenseSaveRequest> requests) {
-		requests.forEach(this::save);
+	public void saveBulk(Long userId, List<ExpenseSaveRequest> requests) {
+		requests.forEach(request -> save(userId, request));
 	}
 
-	public void update(Long expenseId, ExpenseSaveRequest request) {
+	public void update(Long userId, Long expenseId, ExpenseSaveRequest request) {
 		ExpenseSaveRequest resolved = new ExpenseSaveRequest(
 				request.expenseDesc(),
 				request.amount(),
@@ -52,19 +52,19 @@ public class ExpenseService {
 				request.isTrendRelated(),
 				request.transactionType() != null ? request.transactionType() : "EXPENSE",
 				request.isSettlement());
-		expenseMapper.update(expenseId, resolved);
+		expenseMapper.update(userId, expenseId, resolved);
 	}
 
-	public void delete(Long expenseId) {
-		expenseMapper.delete(expenseId);
+	public void delete(Long userId, Long expenseId) {
+		expenseMapper.delete(userId, expenseId);
 	}
 
-	public List<Expense> findAll() {
-		return expenseMapper.findAll();
+	public List<Expense> findAll(Long userId) {
+		return expenseMapper.findAll(userId);
 	}
 
-	public ExpenseSummaryResponse getSummary() {
-		return expenseMapper.getSummary();
+	public ExpenseSummaryResponse getSummary(Long userId) {
+		return expenseMapper.getSummary(userId);
 	}
 
 }

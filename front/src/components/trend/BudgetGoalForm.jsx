@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { getBudgetGoal, saveBudgetGoal } from '../../api/budgetGoalApi'
-import { toDigits, formatAmountInput, formatWon } from '../../utils/format'
+import { formatWon } from '../../utils/format'
+import AmountInput from '../common/AmountInput'
+import CategoryBudgetForm from './CategoryBudgetForm'
+import RecurringExpenseManager from '../expense/RecurringExpenseManager'
 
 function currentYearMonth() {
   const now = new Date()
@@ -129,13 +132,7 @@ function BudgetGoalForm({ onSaved }) {
         {existingGoal && <p className="muted">현재 설정된 목표: {formatWon(existingGoal.targetAmount)}</p>}
         <div className="field">
           <label>목표 금액</label>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={targetAmount ? `${formatAmountInput(targetAmount)}원` : ''}
-            onChange={(e) => setTargetAmount(toDigits(e.target.value))}
-            placeholder="예: 500,000원"
-          />
+          <AmountInput value={targetAmount} onChange={setTargetAmount} placeholder="예: 500,000" />
         </div>
         <button type="button" className="btn btn-primary" onClick={handleSave} disabled={saving || !targetAmount}>
           {saving ? '저장 중...' : existingGoal ? '목표 수정' : '목표 등록'}
@@ -144,6 +141,8 @@ function BudgetGoalForm({ onSaved }) {
       </div>
 
       <TierThresholdGuide targetAmount={targetAmount} />
+      <CategoryBudgetForm />
+      <RecurringExpenseManager />
     </div>
   )
 }

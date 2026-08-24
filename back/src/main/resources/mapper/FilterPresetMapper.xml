@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.trendledger.mapper.FilterPresetMapper">
 
-	<insert id="insert" parameterType="com.trendledger.domain.FilterPresetSaveRequest">
-		INSERT INTO filter_presets (preset_name, start_year_month, end_year_month, categories)
-		VALUES (#{presetName}, #{startYearMonth}, #{endYearMonth}, #{categories})
+	<insert id="insert">
+		INSERT INTO filter_presets (user_id, preset_name, start_year_month, end_year_month, categories)
+		VALUES (#{userId}, #{request.presetName}, #{request.startYearMonth}, #{request.endYearMonth}, #{request.categories})
 	</insert>
 
 	<select id="findAll" resultType="com.trendledger.domain.FilterPreset">
@@ -15,7 +15,16 @@
 			end_year_month      AS endYearMonth,
 			categories
 		FROM filter_presets
+		WHERE user_id = #{userId}
 		ORDER BY preset_id DESC
 	</select>
+
+	<update id="claimOrphaned">
+		UPDATE filter_presets SET user_id = #{userId} WHERE user_id IS NULL
+	</update>
+
+	<delete id="deleteAllByUser">
+		DELETE FROM filter_presets WHERE user_id = #{userId}
+	</delete>
 
 </mapper>

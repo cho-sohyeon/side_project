@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,8 +26,8 @@ public class ProfileController {
 	}
 
 	@GetMapping
-	public ProfileResponse getProfile() {
-		return profileService.getProfile()
+	public ProfileResponse getProfile(@RequestAttribute("userId") Long userId) {
+		return profileService.getProfile(userId)
 				.map(profile -> new ProfileResponse(
 						true,
 						profile,
@@ -37,13 +38,13 @@ public class ProfileController {
 	}
 
 	@PostMapping
-	public void register(@RequestBody ProfileRegisterRequest request) {
-		profileService.register(request);
+	public void register(@RequestAttribute("userId") Long userId, @RequestBody ProfileRegisterRequest request) {
+		profileService.register(userId, request);
 	}
 
 	@PutMapping
-	public void update(@RequestBody ProfileRegisterRequest request) {
-		profileService.update(request);
+	public void update(@RequestAttribute("userId") Long userId, @RequestBody ProfileRegisterRequest request) {
+		profileService.update(userId, request);
 	}
 
 	@ExceptionHandler(IllegalStateException.class)

@@ -11,8 +11,12 @@ import com.trendledger.domain.BudgetGoal;
 @Mapper
 public interface BudgetGoalMapper {
 
-	Optional<BudgetGoal> findByYearMonth(@Param("yearMonth") String yearMonth);
+	Optional<BudgetGoal> findByYearMonth(@Param("userId") Long userId, @Param("yearMonth") String yearMonth);
 
-	void upsert(@Param("yearMonth") String yearMonth, @Param("targetAmount") BigDecimal targetAmount);
+	void upsert(@Param("userId") Long userId, @Param("yearMonth") String yearMonth, @Param("targetAmount") BigDecimal targetAmount);
+
+	void claimOrphaned(@Param("userId") Long userId);
+
+	void deleteAllByUser(@Param("userId") Long userId);
 
 }

@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import TierBadge from './TierBadge'
 import MonthlyCalendar from './MonthlyCalendar'
 import CategoryQuickSummary from './CategoryQuickSummary'
+import MonthlyReport from './MonthlyReport'
+import SpendingTrendChart from './SpendingTrendChart'
+import NoSpendChallenge from './NoSpendChallenge'
 import { getTrendGuide } from '../../api/trendGuideApi'
 
 function SavingsSummary() {
@@ -25,7 +28,10 @@ function SavingsSummary() {
   return (
     <section className="section">
       <h2>오늘의 절약 확인</h2>
+      <MonthlyReport />
+      <NoSpendChallenge />
       <TierBadge tier={guide.tier} savingsRate={guide.savingsRate} />
+      <SpendingTrendChart />
       <CategoryQuickSummary />
       <MonthlyCalendar />
     </section>

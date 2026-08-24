@@ -83,7 +83,7 @@ public class TrendGuideService {
 		this.interestTopicService = interestTopicService;
 	}
 
-	public TrendGuideResponse getGuide() {
+	public TrendGuideResponse getGuide(Long userId, boolean forceRefresh) {
 		YearMonth currentMonth = YearMonth.now();
 		String currentYearMonth = currentMonth.format(YEAR_MONTH_FORMAT);
 		String earliestYearMonth = currentMonth.minusMonths(3).format(YEAR_MONTH_FORMAT);
@@ -91,22 +91,24 @@ public class TrendGuideService {
 		// 이번 달 실적 + 최근 3개월 기준선 계산에 필요한 월별 합계를 한 번의 조회로 가져온다
 		// (기존에는 findMonthlyTotal을 최대 4회 순차 호출했다).
 		Map<String, BigDecimal> monthlyTotals = expenseStatMapper
-				.findMonthlySummaries(new ExpenseStatRequest(earliestYearMonth, currentYearMonth, null))
+				.findMonthlySummaries(new ExpenseStatRequest(userId, earliestYearMonth, currentYearMonth, null))
 				.stream()
 				.collect(Collectors.toMap(MonthlySummary::yearMonth, MonthlySummary::totalAmount));
 
 		BigDecimal actual = monthlyTotals.getOrDefault(currentYearMonth, BigDecimal.ZERO);
-		BigDecimal baseline = resolveBaseline(currentMonth, currentYearMonth, monthlyTotals);
+		BigDecimal baseline = resolveBaseline(userId, currentMonth, currentYearMonth, monthlyTotals);
 
 		BigDecimal savingsRate = tierCalculator.calculateSavingsRate(baseline, actual);
 		String tier = tierCalculator.calculateTier(savingsRate);
 
-		Optional<ProfileDetail> profile = profileMapper.findOne();
-		String cacheKey = trendKeywordBuilder.buildCacheKey(tier, profile);
+		Optional<ProfileDetail> profile = profileMapper.findByUserId(userId);
+		String cacheKey = "u" + userId + "|" + trendKeywordBuilder.buildCacheKey(tier, profile);
 
-		List<NewsCard> cards = trendGuideCacheMapper.findValidCardsJson(cacheKey)
-				.map(this::deserializeCards)
-				.orElseGet(() -> fetchAndCacheCards(tier, profile, cacheKey));
+		List<NewsCard> cards = forceRefresh
+				? fetchAndCacheCards(tier, profile, cacheKey)
+				: trendGuideCacheMapper.findValidCardsJson(cacheKey)
+						.map(this::deserializeCards)
+						.orElseGet(() -> fetchAndCacheCards(tier, profile, cacheKey));
 
 		boolean profileRegistered = profile.isPresent();
 		return new TrendGuideResponse(
@@ -121,7 +123,10 @@ public class TrendGuideService {
 	/**
 	 * 프로필과 무관하게 오늘 화제가 된 경제 뉴스 여러 건을 반환한다 (홈 배너 카드뉴스용).
 	 */
-	public List<NewsCard> getTodayIssues() {
+	public List<NewsCard> getTodayIssues(boolean forceRefresh) {
+		if (forceRefresh) {
+			return fetchAndCacheTodayIssue();
+		}
 		return trendGuideCacheMapper.findValidCardsJson(TODAY_ISSUE_CACHE_KEY)
 				.map(this::deserializeCards)
 				.orElseGet(this::fetchAndCacheTodayIssue);
@@ -144,16 +149,20 @@ public class TrendGuideService {
 	 * 프로필/설문과 무관하게 사용자가 직접 고른 재테크 관심 주제(청약, 주식, ETF 등)의 뉴스를 반환한다.
 	 * 선택된 주제가 없으면 기본 주제(청약·행복주택·부동산 대책)로 대체한다.
 	 */
-	public List<NewsCard> getInterestIssues() {
-		List<String> selectedTopics = interestTopicService.getSelectedTopics();
+	public List<NewsCard> getInterestIssues(Long userId, boolean forceRefresh) {
+		List<String> selectedTopics = interestTopicService.getSelectedTopics(userId);
 		List<String> topics = selectedTopics.isEmpty() ? DEFAULT_INTEREST_TOPICS : selectedTopics;
 		List<String> keywords = topics.stream()
 				.map(code -> TOPIC_KEYWORDS.getOrDefault(code, code))
 				.toList();
 
-		// 선택 조합이 바뀌면 다른 캐시를 쓰도록 정렬된 토픽 코드로 캐시 키를 구성한다.
-		String cacheKey = INTEREST_ISSUE_CACHE_PREFIX + topics.stream().sorted().collect(Collectors.joining(","));
+		// 사용자 + 선택 조합이 바뀌면 다른 캐시를 쓰도록 사용자ID와 정렬된 토픽 코드로 캐시 키를 구성한다.
+		String cacheKey = "u" + userId + "|" + INTEREST_ISSUE_CACHE_PREFIX
+				+ topics.stream().sorted().collect(Collectors.joining(","));
 
+		if (forceRefresh) {
+			return fetchAndCacheInterestIssues(cacheKey, keywords);
+		}
 		return trendGuideCacheMapper.findValidCardsJson(cacheKey)
 				.map(this::deserializeCards)
 				.orElseGet(() -> fetchAndCacheInterestIssues(cacheKey, keywords));
@@ -180,8 +189,8 @@ public class TrendGuideService {
 		return cards;
 	}
 
-	private BigDecimal resolveBaseline(YearMonth currentMonth, String currentYearMonth, Map<String, BigDecimal> monthlyTotals) {
-		Optional<BudgetGoal> goal = budgetGoalService.find(currentYearMonth);
+	private BigDecimal resolveBaseline(Long userId, YearMonth currentMonth, String currentYearMonth, Map<String, BigDecimal> monthlyTotals) {
+		Optional<BudgetGoal> goal = budgetGoalService.find(userId, currentYearMonth);
 		if (goal.isPresent()) {
 			return goal.get().targetAmount();
 		}

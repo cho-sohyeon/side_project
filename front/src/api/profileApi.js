@@ -1,7 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { apiFetch } from './httpClient'
 
 export async function getProfile() {
-  const response = await fetch(`${BASE_URL}/api/profile`)
+  const response = await apiFetch('/api/profile')
   if (!response.ok) {
     throw new Error(`프로필 조회 실패 (status ${response.status})`)
   }
@@ -9,9 +9,8 @@ export async function getProfile() {
 }
 
 export async function registerProfile(profile) {
-  const response = await fetch(`${BASE_URL}/api/profile`, {
+  const response = await apiFetch('/api/profile', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(profile),
   })
   if (!response.ok) {
@@ -20,9 +19,8 @@ export async function registerProfile(profile) {
 }
 
 export async function updateProfile(profile) {
-  const response = await fetch(`${BASE_URL}/api/profile`, {
+  const response = await apiFetch('/api/profile', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(profile),
   })
   if (!response.ok) {

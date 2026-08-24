@@ -17,12 +17,12 @@ public class BudgetGoalService {
 		this.budgetGoalMapper = budgetGoalMapper;
 	}
 
-	public void save(BudgetGoalSaveRequest request) {
-		budgetGoalMapper.upsert(request.yearMonth(), request.targetAmount());
+	public void save(Long userId, BudgetGoalSaveRequest request) {
+		budgetGoalMapper.upsert(userId, request.yearMonth(), request.targetAmount());
 	}
 
-	public Optional<BudgetGoal> find(String yearMonth) {
-		return budgetGoalMapper.findByYearMonth(yearMonth);
+	public Optional<BudgetGoal> find(Long userId, String yearMonth) {
+		return budgetGoalMapper.findByYearMonth(userId, yearMonth);
 	}
 
 }

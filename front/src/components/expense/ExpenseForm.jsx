@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { analyzeExpense, saveExpense } from '../../api/expenseApi'
 import { toDigits, formatAmountInput } from '../../utils/format'
+import AmountInput from '../common/AmountInput'
 
 function ExpenseForm({ onAnalyzed, onSaved }) {
   const [transactionType, setTransactionType] = useState('EXPENSE')
@@ -11,11 +12,23 @@ function ExpenseForm({ onAnalyzed, onSaved }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  const [showSplitCalc, setShowSplitCalc] = useState(false)
+  const [billTotal, setBillTotal] = useState('')
+  const [peopleCount, setPeopleCount] = useState('2')
+
   const isIncome = transactionType === 'INCOME'
+  const myShare = billTotal && Number(peopleCount) > 0 ? Math.round(Number(billTotal) / Number(peopleCount)) : null
 
   function selectType(type) {
     setTransactionType(type)
     setIsSettlement(false)
+  }
+
+  function applySplitShare() {
+    if (myShare) {
+      setAmount(String(myShare))
+      setShowSplitCalc(false)
+    }
   }
 
   async function handleAnalyze() {
@@ -118,14 +131,8 @@ function ExpenseForm({ onAnalyzed, onSaved }) {
       </div>
 
       <div className="field-row">
-        <div className="field">
-          <input
-            type="text"
-            inputMode="numeric"
-            value={amount ? `${formatAmountInput(amount)}원` : ''}
-            onChange={(e) => setAmount(toDigits(e.target.value))}
-            placeholder="금액"
-          />
+        <div className="field" style={{ display: 'flex' }}>
+          <AmountInput value={amount} onChange={setAmount} />
         </div>
         <div className="field">
           <input
@@ -135,6 +142,62 @@ function ExpenseForm({ onAnalyzed, onSaved }) {
           />
         </div>
       </div>
+
+      {!isIncome && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowSplitCalc((v) => !v)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: 'var(--accent-strong)',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            🧮 회식비 등 더치페이 계산기 {showSplitCalc ? '접기 ▲' : '펼치기 ▼'}
+          </button>
+
+          {showSplitCalc && (
+            <div className="card" style={{ marginTop: '8px', background: 'var(--accent-soft)', border: 'none' }}>
+              <p className="muted" style={{ margin: '0 0 8px', fontSize: '11px' }}>
+                전체 결제 금액과 인원 수를 넣으면 내가 실제로 낼 몫만 계산해줘요.
+              </p>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+                <AmountInput value={billTotal} onChange={setBillTotal} placeholder="전체 금액" />
+                <input
+                  type="number"
+                  min="1"
+                  value={peopleCount}
+                  onChange={(e) => setPeopleCount(e.target.value)}
+                  style={{
+                    width: '70px',
+                    flexShrink: 0,
+                    padding: '10px',
+                    border: '1.5px solid var(--color-border)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '14px',
+                    background: 'var(--color-bg)',
+                    color: 'var(--color-text)',
+                  }}
+                />
+                <span style={{ alignSelf: 'center', fontSize: '13px', color: 'var(--color-text-muted)', flexShrink: 0 }}>명</span>
+              </div>
+              {myShare !== null && (
+                <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700 }}>
+                  내 몫: {formatAmountInput(String(myShare))}원
+                </p>
+              )}
+              <button type="button" className="btn btn-primary" onClick={applySplitShare} disabled={!myShare} style={{ padding: '6px 14px', fontSize: '12px' }}>
+                이 금액으로 채우기
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <label
         style={{
@@ -157,7 +220,7 @@ function ExpenseForm({ onAnalyzed, onSaved }) {
           checked={isSettlement}
           onChange={(e) => setIsSettlement(e.target.checked)}
         />
-        🧾 더치페이/정산
+        🧾 내가 전체 결제하고 나중에 돌려받을 돈이에요
       </label>
 
       {isIncome ? (

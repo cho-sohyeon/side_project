@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.trendledger.mapper.ProfileMapper">
 
-	<select id="findOne" resultType="com.trendledger.domain.ProfileDetail">
+	<select id="findByUserId" resultType="com.trendledger.domain.ProfileDetail">
 		SELECT
 			profile_id                  AS profileId,
 			age_household_type          AS ageHouseholdType,
@@ -13,13 +13,13 @@
 			created_at                  AS createdAt,
 			updated_at                  AS updatedAt
 		FROM profiles
-		ORDER BY profile_id ASC
+		WHERE user_id = #{userId}
 		LIMIT 1
 	</select>
 
 	<insert id="insert" parameterType="com.trendledger.domain.ProfileUpsertRecord">
-		INSERT INTO profiles (age_household_type, has_subscription_account, living_type, spending_habit_type, investment_propensity_type)
-		VALUES (#{ageHouseholdType}, #{hasSubscriptionAccount}, #{livingType}, #{spendingHabitType}, #{investmentPropensityType})
+		INSERT INTO profiles (user_id, age_household_type, has_subscription_account, living_type, spending_habit_type, investment_propensity_type)
+		VALUES (#{userId}, #{ageHouseholdType}, #{hasSubscriptionAccount}, #{livingType}, #{spendingHabitType}, #{investmentPropensityType})
 	</insert>
 
 	<update id="update" parameterType="com.trendledger.domain.ProfileUpsertRecord">
@@ -30,7 +30,15 @@
 			spending_habit_type = #{spendingHabitType},
 			investment_propensity_type = #{investmentPropensityType},
 			updated_at = now()
-		WHERE profile_id = #{profileId}
+		WHERE profile_id = #{profileId} AND user_id = #{userId}
 	</update>
+
+	<update id="claimOrphaned">
+		UPDATE profiles SET user_id = #{userId} WHERE user_id IS NULL
+	</update>
+
+	<delete id="deleteByUserId">
+		DELETE FROM profiles WHERE user_id = #{userId}
+	</delete>
 
 </mapper>

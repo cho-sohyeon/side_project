@@ -22,17 +22,55 @@ function labelOf(options, value) {
   return options.find((o) => o.value === value)?.label ?? value
 }
 
+function SectionHeader({ title, onRefresh, loading }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 8px' }}>
+      <p style={{ fontSize: '13px', fontWeight: 700, margin: 0 }}>{title}</p>
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={loading}
+        aria-label="새로고침"
+        style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '15px', opacity: 0.45, lineHeight: 1 }}
+      >
+        {loading ? '⏳' : '🔄'}
+      </button>
+    </div>
+  )
+}
+
 function TrendGuide({ onGoToProfile }) {
   const [guide, setGuide] = useState(null)
   const [profile, setProfile] = useState(null)
   const [todayCards, setTodayCards] = useState([])
   const [interestCards, setInterestCards] = useState([])
   const [error, setError] = useState(null)
+  const [guideLoading, setGuideLoading] = useState(false)
+  const [todayLoading, setTodayLoading] = useState(false)
+  const [interestLoading, setInterestLoading] = useState(false)
+
+  function refreshGuide() {
+    setGuideLoading(true)
+    getTrendGuide(true)
+      .then(setGuide)
+      .catch((e) => setError(e.message))
+      .finally(() => setGuideLoading(false))
+  }
+
+  function refreshTodayCards() {
+    setTodayLoading(true)
+    getTodayIssues(true)
+      .then(setTodayCards)
+      .catch(() => {})
+      .finally(() => setTodayLoading(false))
+  }
 
   function refreshInterestCards() {
-    getInterestIssues()
+    setInterestLoading(true)
+    getInterestIssues(true)
       .then(setInterestCards)
-      .catch(() => setInterestCards([]))
+      .catch(() => {})
+      .finally(() => setInterestLoading(false))
   }
 
   useEffect(() => {
@@ -45,7 +83,9 @@ function TrendGuide({ onGoToProfile }) {
     getTodayIssues()
       .then(setTodayCards)
       .catch(() => setTodayCards([]))
-    refreshInterestCards()
+    getInterestIssues()
+      .then(setInterestCards)
+      .catch(() => setInterestCards([]))
   }, [])
 
   if (error) {
@@ -93,7 +133,7 @@ function TrendGuide({ onGoToProfile }) {
       )}
 
       <div>
-        <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 8px' }}>🎯 나에게 맞춘 트렌드</p>
+        <SectionHeader title="🎯 나에게 맞춘 트렌드" onRefresh={refreshGuide} loading={guideLoading} />
         <NewsCardList cards={guide.cards} tier={guide.tier} />
       </div>
 
@@ -101,14 +141,14 @@ function TrendGuide({ onGoToProfile }) {
 
       {interestCards.length > 0 && (
         <div>
-          <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 8px' }}>📌 관심 토픽 뉴스</p>
+          <SectionHeader title="📌 관심 토픽 뉴스" onRefresh={refreshInterestCards} loading={interestLoading} />
           <NewsCardList cards={interestCards} tier="HOUSING" />
         </div>
       )}
 
       {todayCards.length > 0 && (
         <div>
-          <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 8px' }}>🔥 오늘의 인기 경제 이슈</p>
+          <SectionHeader title="🔥 오늘의 인기 경제 이슈" onRefresh={refreshTodayCards} loading={todayLoading} />
           <NewsCardList cards={todayCards} tier="TODAY" />
         </div>
       )}

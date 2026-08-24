@@ -1,7 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { apiFetch } from './httpClient'
 
 export async function getInterestTopics() {
-  const response = await fetch(`${BASE_URL}/api/interests`)
+  const response = await apiFetch('/api/interests')
   if (!response.ok) {
     throw new Error(`관심 토픽 조회 실패 (status ${response.status})`)
   }
@@ -9,9 +9,8 @@ export async function getInterestTopics() {
 }
 
 export async function saveInterestTopics(topicCodes) {
-  const response = await fetch(`${BASE_URL}/api/interests`, {
+  const response = await apiFetch('/api/interests', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(topicCodes),
   })
   if (!response.ok) {

@@ -15,4 +15,6 @@ public interface SurveyResponseMapper {
 
 	List<SurveyAnswerRow> findLatestAnswers(@Param("profileId") Long profileId);
 
+	void deleteByProfileId(@Param("profileId") Long profileId);
+
 }

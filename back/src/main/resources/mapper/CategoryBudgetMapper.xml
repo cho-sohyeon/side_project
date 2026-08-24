@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.CategoryBudgetMapper">
+
+	<select id="findByYearMonth" resultType="com.trendledger.domain.CategoryBudget">
+		SELECT category, target_amount AS targetAmount
+		FROM category_budgets
+		WHERE user_id = #{userId} AND year_month = #{yearMonth}
+		ORDER BY category
+	</select>
+
+	<insert id="upsert">
+		INSERT INTO category_budgets (user_id, year_month, category, target_amount)
+		VALUES (#{userId}, #{yearMonth}, #{category}, #{targetAmount})
+		ON CONFLICT (user_id, year_month, category) DO UPDATE SET target_amount = #{targetAmount}
+	</insert>
+
+	<delete id="delete">
+		DELETE FROM category_budgets WHERE user_id = #{userId} AND year_month = #{yearMonth} AND category = #{category}
+	</delete>
+
+</mapper>

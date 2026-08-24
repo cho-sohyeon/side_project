@@ -1,7 +1,9 @@
 package com.trendledger.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -21,18 +23,22 @@ public class TrendGuideController {
 	}
 
 	@GetMapping
-	public TrendGuideResponse getGuide() {
-		return trendGuideService.getGuide();
+	public TrendGuideResponse getGuide(
+			@RequestAttribute("userId") Long userId,
+			@RequestParam(defaultValue = "false") boolean refresh) {
+		return trendGuideService.getGuide(userId, refresh);
 	}
 
 	@GetMapping("/today-issues")
-	public List<NewsCard> todayIssues() {
-		return trendGuideService.getTodayIssues();
+	public List<NewsCard> todayIssues(@RequestParam(defaultValue = "false") boolean refresh) {
+		return trendGuideService.getTodayIssues(refresh);
 	}
 
 	@GetMapping("/interest-issues")
-	public List<NewsCard> interestIssues() {
-		return trendGuideService.getInterestIssues();
+	public List<NewsCard> interestIssues(
+			@RequestAttribute("userId") Long userId,
+			@RequestParam(defaultValue = "false") boolean refresh) {
+		return trendGuideService.getInterestIssues(userId, refresh);
 	}
 
 }

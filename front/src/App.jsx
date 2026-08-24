@@ -6,11 +6,17 @@ import ExpenseList from './components/expense/ExpenseList'
 import BankCsvImport from './components/expense/BankCsvImport'
 import Dashboard from './components/dashboard/Dashboard'
 import ProfileView from './components/profile/ProfileView'
+import ProfileRegisterForm from './components/profile/ProfileRegisterForm'
 import BudgetGoalForm from './components/trend/BudgetGoalForm'
 import SavingsSummary from './components/trend/SavingsSummary'
 import TrendGuide from './components/trend/TrendGuide'
 import StepNav from './components/layout/StepNav'
+import AuthGate from './components/auth/AuthGate'
 import { getExpenses } from './api/expenseApi'
+import { getProfile } from './api/profileApi'
+import { logout as logoutApi } from './api/authApi'
+import { getToken } from './api/httpClient'
+import { generateDueRecurringExpenses } from './api/recurringExpenseApi'
 import './App.css'
 
 const STEPS = [
@@ -27,15 +33,54 @@ function App() {
   const [analysis, setAnalysis] = useState(null)
   const [expenses, setExpenses] = useState([])
   const [formKey, setFormKey] = useState(0)
+  // 'loading' | 'auth'(로그인 필요) | 'onboarding'(로그인은 됐지만 프로필 미등록) | 'active'
+  const [sessionState, setSessionState] = useState('loading')
 
   async function refreshExpenses() {
     const data = await getExpenses()
     setExpenses(data)
   }
 
+  function checkSession() {
+    if (!getToken()) {
+      setSessionState('auth')
+      return
+    }
+    getProfile()
+      .then((res) => {
+        setSessionState(res.registered ? 'active' : 'onboarding')
+        if (res.registered) {
+          generateDueRecurringExpenses()
+            .catch(() => {})
+            .finally(refreshExpenses)
+        }
+      })
+      .catch(() => setSessionState('auth'))
+  }
+
   useEffect(() => {
-    refreshExpenses()
+    checkSession()
+    function handleUnauthorized() {
+      setSessionState('auth')
+    }
+    window.addEventListener('trendledger:unauthorized', handleUnauthorized)
+    return () => window.removeEventListener('trendledger:unauthorized', handleUnauthorized)
   }, [])
+
+  function handleAuthenticated() {
+    checkSession()
+  }
+
+  function handleOnboarded() {
+    setSessionState('active')
+    refreshExpenses()
+  }
+
+  async function handleLogout() {
+    await logoutApi()
+    setStepIndex(0)
+    setSessionState('auth')
+  }
 
   function handleSaved() {
     setAnalysis(null)
@@ -49,6 +94,44 @@ function App() {
   }
 
   const currentStep = STEPS[stepIndex].key
+
+  if (sessionState === 'loading') {
+    return (
+      <div className="app-shell">
+        <div className="app-frame" style={{ alignItems: 'center', justifyContent: 'center' }}>
+          <p className="muted">불러오는 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (sessionState === 'auth') {
+    return <AuthGate onAuthenticated={handleAuthenticated} />
+  }
+
+  if (sessionState === 'onboarding') {
+    return (
+      <div className="app-shell">
+        <div className="app-frame">
+          <header className="app-header">
+            <span className="brand">🐷 TrendLedger</span>
+          </header>
+          <section id="center">
+            <div className="section">
+              <div className="card" style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: '40px', margin: '0 0 8px' }}>🐷</p>
+                <h2 style={{ margin: '0 0 4px' }}>TrendLedger에 오신 걸 환영해요</h2>
+                <p className="muted" style={{ margin: 0 }}>
+                  맞춤 가이드를 위해 먼저 프로필을 등록해주세요
+                </p>
+              </div>
+              <ProfileRegisterForm mode="register" onSaved={handleOnboarded} />
+            </div>
+          </section>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="app-shell">
@@ -69,7 +152,7 @@ function App() {
         <section id="center">
           {currentStep === 'home' && <Home onNavigate={goToStep} />}
 
-          {currentStep === 'profile' && <ProfileView />}
+          {currentStep === 'profile' && <ProfileView onLogout={handleLogout} />}
 
           {currentStep === 'goal' && <BudgetGoalForm />}
 

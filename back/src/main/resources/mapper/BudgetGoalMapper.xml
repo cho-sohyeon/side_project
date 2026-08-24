@@ -8,13 +8,21 @@
 			year_month     AS yearMonth,
 			target_amount  AS targetAmount
 		FROM budget_goals
-		WHERE year_month = #{yearMonth}
+		WHERE user_id = #{userId} AND year_month = #{yearMonth}
 	</select>
 
 	<insert id="upsert">
-		INSERT INTO budget_goals (year_month, target_amount)
-		VALUES (#{yearMonth}, #{targetAmount})
-		ON CONFLICT (year_month) DO UPDATE SET target_amount = #{targetAmount}
+		INSERT INTO budget_goals (user_id, year_month, target_amount)
+		VALUES (#{userId}, #{yearMonth}, #{targetAmount})
+		ON CONFLICT (user_id, year_month) DO UPDATE SET target_amount = #{targetAmount}
 	</insert>
+
+	<update id="claimOrphaned">
+		UPDATE budget_goals SET user_id = #{userId} WHERE user_id IS NULL
+	</update>
+
+	<delete id="deleteAllByUser">
+		DELETE FROM budget_goals WHERE user_id = #{userId}
+	</delete>
 
 </mapper>

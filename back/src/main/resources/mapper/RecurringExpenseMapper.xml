@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.RecurringExpenseMapper">
+
+	<insert id="insert">
+		INSERT INTO recurring_expenses (user_id, expense_desc, amount, category, transaction_type, day_of_month)
+		VALUES (#{userId}, #{request.expenseDesc}, #{request.amount}, #{request.category}, #{request.transactionType}, #{request.dayOfMonth})
+	</insert>
+
+	<select id="findActiveByUser" resultType="com.trendledger.domain.RecurringExpense">
+		SELECT
+			recurring_id      AS recurringId,
+			expense_desc      AS expenseDesc,
+			amount,
+			category,
+			transaction_type  AS transactionType,
+			day_of_month      AS dayOfMonth,
+			is_active         AS isActive
+		FROM recurring_expenses
+		WHERE user_id = #{userId} AND is_active = true
+		ORDER BY day_of_month
+	</select>
+
+	<update id="deactivate">
+		UPDATE recurring_expenses SET is_active = false WHERE user_id = #{userId} AND recurring_id = #{recurringId}
+	</update>
+
+</mapper>

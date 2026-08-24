@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.UserMapper">
+
+	<sql id="columns">
+		user_id        AS userId,
+		username,
+		password_hash  AS passwordHash,
+		nickname,
+		created_at     AS createdAt
+	</sql>
+
+	<select id="findByUsername" resultType="com.trendledger.domain.UserAccount">
+		SELECT <include refid="columns" /> FROM users WHERE username = #{username}
+	</select>
+
+	<select id="findById" resultType="com.trendledger.domain.UserAccount">
+		SELECT <include refid="columns" /> FROM users WHERE user_id = #{userId}
+	</select>
+
+	<select id="countAll" resultType="long">
+		SELECT COUNT(*) FROM users
+	</select>
+
+	<insert id="insert">
+		INSERT INTO users (username, password_hash, nickname)
+		VALUES (#{username}, #{passwordHash}, #{nickname})
+	</insert>
+
+	<update id="updateNickname">
+		UPDATE users SET nickname = #{nickname} WHERE user_id = #{userId}
+	</update>
+
+	<update id="updatePassword">
+		UPDATE users SET password_hash = #{passwordHash} WHERE user_id = #{userId}
+	</update>
+
+	<delete id="delete">
+		DELETE FROM users WHERE user_id = #{userId}
+	</delete>
+
+</mapper>

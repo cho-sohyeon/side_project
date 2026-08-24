@@ -3,16 +3,16 @@
 <mapper namespace="com.trendledger.mapper.InterestTopicMapper">
 
 	<select id="findAll" resultType="java.lang.String">
-		SELECT topic_code FROM interest_topics ORDER BY topic_code
+		SELECT topic_code FROM interest_topics WHERE user_id = #{userId} ORDER BY topic_code
 	</select>
 
 	<delete id="deleteAll">
-		DELETE FROM interest_topics
+		DELETE FROM interest_topics WHERE user_id = #{userId}
 	</delete>
 
 	<insert id="insert">
-		INSERT INTO interest_topics (topic_code) VALUES (#{topicCode})
-		ON CONFLICT (topic_code) DO NOTHING
+		INSERT INTO interest_topics (user_id, topic_code) VALUES (#{userId}, #{topicCode})
+		ON CONFLICT (user_id, topic_code) DO NOTHING
 	</insert>
 
 </mapper>

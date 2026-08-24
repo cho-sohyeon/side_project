@@ -20,4 +20,8 @@
 		ORDER BY survey_type, question_code, response_id DESC
 	</select>
 
+	<delete id="deleteByProfileId">
+		DELETE FROM survey_responses WHERE profile_id = #{profileId}
+	</delete>
+
 </mapper>

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,13 +24,13 @@ public class FilterPresetController {
 	}
 
 	@PostMapping
-	public void save(@RequestBody FilterPresetSaveRequest request) {
-		filterPresetService.save(request);
+	public void save(@RequestAttribute("userId") Long userId, @RequestBody FilterPresetSaveRequest request) {
+		filterPresetService.save(userId, request);
 	}
 
 	@GetMapping
-	public List<FilterPreset> list() {
-		return filterPresetService.findAll();
+	public List<FilterPreset> list(@RequestAttribute("userId") Long userId) {
+		return filterPresetService.findAll(userId);
 	}
 
 }
