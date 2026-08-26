@@ -4,6 +4,7 @@ CREATE TABLE users (
     password_hash  VARCHAR(100) NOT NULL,
     nickname       VARCHAR(50) NOT NULL,
     profile_image  TEXT,
+    role           VARCHAR(10) NOT NULL DEFAULT 'USER',
     created_at     TIMESTAMP NOT NULL DEFAULT now()
 );
 

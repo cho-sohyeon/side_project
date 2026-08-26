@@ -8,6 +8,7 @@
 		password_hash  AS passwordHash,
 		nickname,
 		profile_image  AS profileImage,
+		role,
 		created_at     AS createdAt
 	</sql>
 

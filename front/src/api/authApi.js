@@ -14,7 +14,7 @@ export async function register({ username, password, nickname }) {
     throw new Error(await parseErrorMessage(response, `회원가입 실패 (status ${response.status})`))
   }
   const data = await response.json()
-  setSession(data.token, data.nickname, data.profileImage)
+  setSession(data.token, data.nickname, data.profileImage, data.role)
   return data
 }
 
@@ -27,7 +27,7 @@ export async function login({ username, password }) {
     throw new Error(await parseErrorMessage(response, `로그인 실패 (status ${response.status})`))
   }
   const data = await response.json()
-  setSession(data.token, data.nickname, data.profileImage)
+  setSession(data.token, data.nickname, data.profileImage, data.role)
   return data
 }
 

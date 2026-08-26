@@ -13,14 +13,15 @@ import TrendGuide from './components/trend/TrendGuide'
 import StepNav from './components/layout/StepNav'
 import AuthGate from './components/auth/AuthGate'
 import ChatView from './components/chat/ChatView'
+import AdminView from './components/admin/AdminView'
 import { getExpenses } from './api/expenseApi'
 import { getProfile } from './api/profileApi'
 import { logout as logoutApi } from './api/authApi'
-import { getToken } from './api/httpClient'
+import { getToken, isAdmin } from './api/httpClient'
 import { generateDueRecurringExpenses } from './api/recurringExpenseApi'
 import './App.css'
 
-const STEPS = [
+const BASE_STEPS = [
   { key: 'home', label: '홈' },
   { key: 'goal', label: '목표·절약' },
   { key: 'expense', label: '거래입력' },
@@ -28,6 +29,8 @@ const STEPS = [
   { key: 'chat', label: 'Ledger' },
   { key: 'profile', label: '프로필' },
 ]
+
+const ADMIN_STEP = { key: 'admin', label: '관리자' }
 
 function App() {
   const [stepIndex, setStepIndex] = useState(0)
@@ -89,6 +92,8 @@ function App() {
     setFormKey((k) => k + 1)
     refreshExpenses()
   }
+
+  const STEPS = isAdmin() ? [...BASE_STEPS, ADMIN_STEP] : BASE_STEPS
 
   function goToStep(key) {
     const index = STEPS.findIndex((step) => step.key === key)
@@ -188,6 +193,8 @@ function App() {
           )}
 
           {currentStep === 'chat' && <ChatView />}
+
+          {currentStep === 'admin' && <AdminView />}
         </section>
 
         <StepNav steps={STEPS} currentIndex={stepIndex} onSelect={setStepIndex} />

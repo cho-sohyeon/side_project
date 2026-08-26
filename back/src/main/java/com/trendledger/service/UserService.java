@@ -74,7 +74,7 @@ public class UserService {
 		}
 
 		String token = createSession(created.userId());
-		return new AuthResponse(token, created.nickname(), created.profileImage());
+		return new AuthResponse(token, created.nickname(), created.profileImage(), created.role());
 	}
 
 	public AuthResponse login(UserLoginRequest request) {
@@ -84,7 +84,7 @@ public class UserService {
 			throw new IllegalStateException("아이디 또는 비밀번호가 올바르지 않습니다.");
 		}
 		String token = createSession(account.userId());
-		return new AuthResponse(token, account.nickname(), account.profileImage());
+		return new AuthResponse(token, account.nickname(), account.profileImage(), account.role());
 	}
 
 	public void logout(String token) {
@@ -114,7 +114,7 @@ public class UserService {
 		// 지금 이 세션은 새 토큰을 발급해 로그아웃 없이 이어가게 한다.
 		sessionMapper.deleteAllByUser(userId);
 		String token = createSession(userId);
-		return new AuthResponse(token, account.nickname(), account.profileImage());
+		return new AuthResponse(token, account.nickname(), account.profileImage(), account.role());
 	}
 
 	private static final int MAX_PROFILE_IMAGE_LENGTH = 700_000; // base64 기준 약 500KB 원본 이미지 상한
@@ -151,6 +151,13 @@ public class UserService {
 
 	public Optional<Long> resolveUserId(String token) {
 		return sessionMapper.findUserIdByToken(token);
+	}
+
+	public void requireAdmin(Long userId) {
+		boolean isAdmin = userMapper.findById(userId).map(UserAccount::isAdmin).orElse(false);
+		if (!isAdmin) {
+			throw new SecurityException("관리자만 접근할 수 있습니다.");
+		}
 	}
 
 	private void validate(UserRegisterRequest request) {

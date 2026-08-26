@@ -8,6 +8,10 @@ public record UserAccount(
 		String passwordHash,
 		String nickname,
 		String profileImage,
+		String role,
 		LocalDateTime createdAt
 ) {
+	public boolean isAdmin() {
+		return "ADMIN".equals(role);
+	}
 }

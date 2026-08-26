@@ -24,7 +24,7 @@ export async function changePassword(currentPassword, newPassword) {
     throw new Error(text || `비밀번호 변경 실패 (status ${response.status})`)
   }
   const data = await response.json()
-  setSession(data.token, data.nickname, data.profileImage)
+  setSession(data.token, data.nickname, data.profileImage, data.role)
   return data
 }
 

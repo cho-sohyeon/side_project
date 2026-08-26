@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendledger.mapper.AdminMapper">
+
+	<select id="findUserSummaries" resultType="com.trendledger.domain.AdminUserSummary">
+		SELECT
+			u.user_id AS userId,
+			u.username,
+			u.nickname,
+			u.role,
+			u.created_at AS createdAt,
+			COUNT(e.expense_id) AS expenseCount,
+			COALESCE(SUM(CASE WHEN e.transaction_type = 'EXPENSE' AND e.is_settlement = false THEN e.amount ELSE 0 END), 0) AS totalExpenseAmount,
+			COALESCE(SUM(CASE WHEN e.transaction_type = 'INCOME' THEN e.amount ELSE 0 END), 0) AS totalIncomeAmount
+		FROM users u
+		LEFT JOIN expenses e ON e.user_id = u.user_id
+		GROUP BY u.user_id, u.username, u.nickname, u.role, u.created_at
+		ORDER BY u.created_at DESC
+	</select>
+
+</mapper>
