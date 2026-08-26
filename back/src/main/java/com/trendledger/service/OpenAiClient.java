@@ -148,12 +148,13 @@ public class OpenAiClient {
 			- "무조건 오릅니다", "손실 없이 보장됩니다" 같은 확정적 수익/원금보장 표현은 절대 쓰지 마라.
 			- 실제 투자 자문/중개가 아닌 참고용 정보 제공이라는 선은 넘지 마라 (구체적 제안은 하되, 법적 보장처럼 말하지 마라).
 			- 친근한 존댓말로 쓰되, 절대 긴 문단으로 쓰지 마라.
-			- 답변은 2~5개의 말풍선(메시지)으로 나눠서 써라. 말풍선 사이만 줄바꿈 두 번(빈 줄)으로 구분해라.
-			  실제 메신저에서 여러 번 나눠 보내는 것처럼. 메시지 개수를 늘려서라도 되묻지 말고 정보를 충분히 담아라.
+			- 답변은 반드시 최대 5개, 최소 2개의 말풍선(메시지)으로만 써라. 절대 5개를 넘기지 마라.
+			  말풍선 사이만 줄바꿈 두 번(빈 줄)으로 구분해라. 실제 메신저에서 여러 번 나눠 보내는 것처럼.
+			  개수 제한이 있으니 되묻지 말고, 가장 중요한 정보만 압축해서 담아라.
 			- "1)", "2)"처럼 번호가 붙는 항목을 나열할 때는 번호 하나당 말풍선 하나로 묶어라.
 			  그 항목의 이유나 예시(금액 등)는 절대 별도 말풍선으로 떼어내지 말고, 같은 말풍선 안에 한 문장으로 붙여서 써라.
 			  (예: "1) 매달 20%를 저축하세요. 20만원 중 4만원이에요." 처럼 번호+설명+예시를 한 덩어리로.)
-			- 각 말풍선은 1~3문장(공백 포함 100자 이내)으로 써라.
+			- 각 말풍선은 최대 1~2문장(공백 포함 60자 이내)으로 짧게 써라. 군더더기 설명 없이 핵심만 말해라.
 			- 마크다운 문법을 쓰지 마라 (별표 굵게, #, - 목록 기호 금지). 순서를 나타낼 땐 "1)", "2)"처럼 텍스트로만 써라.
 			""";
 
@@ -179,7 +180,34 @@ public class OpenAiClient {
 
 		List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
 		Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-		return stripMarkdown(((String) message.get("content")).trim());
+		return capBubbles(stripMarkdown(((String) message.get("content")).trim()));
+	}
+
+	private static final int MAX_CHAT_BUBBLES = 5;
+
+	/**
+	 * 프롬프트로 "최대 5개 말풍선"을 지시해도 모델이 가끔 더 잘게 쪼개서 보낸다.
+	 * 프론트엔드가 빈 줄 기준으로 말풍선을 나누므로, 초과분은 마지막 말풍선에 합쳐서
+	 * 실제 화면에서도 5개를 넘지 않도록 보장한다.
+	 */
+	private String capBubbles(String text) {
+		String[] bubbles = text.split("\\n\\s*\\n");
+		if (bubbles.length <= MAX_CHAT_BUBBLES) {
+			return text;
+		}
+		StringBuilder merged = new StringBuilder();
+		for (int i = 0; i < MAX_CHAT_BUBBLES - 1; i++) {
+			merged.append(bubbles[i].trim()).append("\n\n");
+		}
+		StringBuilder last = new StringBuilder();
+		for (int i = MAX_CHAT_BUBBLES - 1; i < bubbles.length; i++) {
+			if (last.length() > 0) {
+				last.append(" ");
+			}
+			last.append(bubbles[i].trim());
+		}
+		merged.append(last);
+		return merged.toString();
 	}
 
 	/**

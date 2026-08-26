@@ -7,6 +7,7 @@
 		username,
 		password_hash  AS passwordHash,
 		nickname,
+		profile_image  AS profileImage,
 		created_at     AS createdAt
 	</sql>
 
@@ -33,6 +34,10 @@
 
 	<update id="updatePassword">
 		UPDATE users SET password_hash = #{passwordHash} WHERE user_id = #{userId}
+	</update>
+
+	<update id="updateProfileImage">
+		UPDATE users SET profile_image = #{profileImage} WHERE user_id = #{userId}
 	</update>
 
 	<delete id="delete">

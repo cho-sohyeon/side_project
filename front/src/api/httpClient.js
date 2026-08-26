@@ -1,6 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const TOKEN_KEY = 'trendledger_auth_token'
 const NICKNAME_KEY = 'trendledger_nickname'
+const PROFILE_IMAGE_KEY = 'trendledger_profile_image'
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY)
@@ -10,18 +11,36 @@ export function getNickname() {
   return localStorage.getItem(NICKNAME_KEY)
 }
 
-export function setSession(token, nickname) {
+export function getProfileImage() {
+  return localStorage.getItem(PROFILE_IMAGE_KEY)
+}
+
+export function setSession(token, nickname, profileImage) {
   localStorage.setItem(TOKEN_KEY, token)
   localStorage.setItem(NICKNAME_KEY, nickname)
+  if (profileImage) {
+    localStorage.setItem(PROFILE_IMAGE_KEY, profileImage)
+  } else {
+    localStorage.removeItem(PROFILE_IMAGE_KEY)
+  }
 }
 
 export function setNickname(nickname) {
   localStorage.setItem(NICKNAME_KEY, nickname)
 }
 
+export function setProfileImage(profileImage) {
+  if (profileImage) {
+    localStorage.setItem(PROFILE_IMAGE_KEY, profileImage)
+  } else {
+    localStorage.removeItem(PROFILE_IMAGE_KEY)
+  }
+}
+
 export function clearSession() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(NICKNAME_KEY)
+  localStorage.removeItem(PROFILE_IMAGE_KEY)
 }
 
 export async function apiFetch(path, options = {}) {

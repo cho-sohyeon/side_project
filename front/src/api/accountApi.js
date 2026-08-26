@@ -1,4 +1,4 @@
-import { apiFetch, setNickname, setSession, clearSession } from './httpClient'
+import { apiFetch, setNickname, setSession, setProfileImage, clearSession } from './httpClient'
 
 export async function updateNickname(nickname) {
   const response = await apiFetch('/api/account/nickname', {
@@ -24,8 +24,20 @@ export async function changePassword(currentPassword, newPassword) {
     throw new Error(text || `비밀번호 변경 실패 (status ${response.status})`)
   }
   const data = await response.json()
-  setSession(data.token, data.nickname)
+  setSession(data.token, data.nickname, data.profileImage)
   return data
+}
+
+export async function updateProfileImage(profileImage) {
+  const response = await apiFetch('/api/account/profile-image', {
+    method: 'PUT',
+    body: JSON.stringify({ profileImage }),
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(text || `프로필 사진 변경 실패 (status ${response.status})`)
+  }
+  setProfileImage(profileImage)
 }
 
 export async function deleteAccount(password) {

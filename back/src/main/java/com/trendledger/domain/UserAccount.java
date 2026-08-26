@@ -7,6 +7,7 @@ public record UserAccount(
 		String username,
 		String passwordHash,
 		String nickname,
+		String profileImage,
 		LocalDateTime createdAt
 ) {
 }

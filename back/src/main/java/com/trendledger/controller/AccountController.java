@@ -14,6 +14,7 @@ import com.trendledger.domain.AccountDeleteRequest;
 import com.trendledger.domain.AuthResponse;
 import com.trendledger.domain.NicknameUpdateRequest;
 import com.trendledger.domain.PasswordChangeRequest;
+import com.trendledger.domain.ProfileImageUpdateRequest;
 import com.trendledger.service.UserService;
 
 @RestController
@@ -34,6 +35,11 @@ public class AccountController {
 	@PutMapping("/password")
 	public AuthResponse changePassword(@RequestAttribute("userId") Long userId, @RequestBody PasswordChangeRequest request) {
 		return userService.changePassword(userId, request.currentPassword(), request.newPassword());
+	}
+
+	@PutMapping("/profile-image")
+	public void updateProfileImage(@RequestAttribute("userId") Long userId, @RequestBody ProfileImageUpdateRequest request) {
+		userService.updateProfileImage(userId, request.profileImage());
 	}
 
 	@DeleteMapping

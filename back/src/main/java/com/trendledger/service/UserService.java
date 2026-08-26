@@ -74,7 +74,7 @@ public class UserService {
 		}
 
 		String token = createSession(created.userId());
-		return new AuthResponse(token, created.nickname());
+		return new AuthResponse(token, created.nickname(), created.profileImage());
 	}
 
 	public AuthResponse login(UserLoginRequest request) {
@@ -84,7 +84,7 @@ public class UserService {
 			throw new IllegalStateException("아이디 또는 비밀번호가 올바르지 않습니다.");
 		}
 		String token = createSession(account.userId());
-		return new AuthResponse(token, account.nickname());
+		return new AuthResponse(token, account.nickname(), account.profileImage());
 	}
 
 	public void logout(String token) {
@@ -114,7 +114,16 @@ public class UserService {
 		// 지금 이 세션은 새 토큰을 발급해 로그아웃 없이 이어가게 한다.
 		sessionMapper.deleteAllByUser(userId);
 		String token = createSession(userId);
-		return new AuthResponse(token, account.nickname());
+		return new AuthResponse(token, account.nickname(), account.profileImage());
+	}
+
+	private static final int MAX_PROFILE_IMAGE_LENGTH = 700_000; // base64 기준 약 500KB 원본 이미지 상한
+
+	public void updateProfileImage(Long userId, String profileImageBase64) {
+		if (profileImageBase64 != null && profileImageBase64.length() > MAX_PROFILE_IMAGE_LENGTH) {
+			throw new IllegalStateException("이미지 용량이 너무 큽니다. 더 작은 이미지를 사용해주세요.");
+		}
+		userMapper.updateProfileImage(userId, profileImageBase64);
 	}
 
 	/**

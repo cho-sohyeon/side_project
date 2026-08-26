@@ -23,6 +23,8 @@ public interface UserMapper {
 
 	void updatePassword(@Param("userId") Long userId, @Param("passwordHash") String passwordHash);
 
+	void updateProfileImage(@Param("userId") Long userId, @Param("profileImage") String profileImage);
+
 	void delete(@Param("userId") Long userId);
 
 }

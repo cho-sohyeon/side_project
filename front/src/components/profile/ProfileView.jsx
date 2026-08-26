@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ProfileRegisterForm from './ProfileRegisterForm'
 import { getProfile } from '../../api/profileApi'
-import { getNickname } from '../../api/httpClient'
-import { updateNickname } from '../../api/accountApi'
+import { getNickname, getProfileImage } from '../../api/httpClient'
+import { updateNickname, updateProfileImage } from '../../api/accountApi'
+import { resizeImageToBase64 } from '../../utils/image'
 import AccountSettings from './AccountSettings'
 import { AGE_HOUSEHOLD_OPTIONS, LIVING_TYPE_OPTIONS } from './BasicInfoForm'
 
@@ -36,6 +37,10 @@ function ProfileView({ onLogout }) {
   const [nicknameInput, setNicknameInput] = useState('')
   const [savingNickname, setSavingNickname] = useState(false)
   const [nicknameError, setNicknameError] = useState(null)
+  const [profileImage, setProfileImageState] = useState(getProfileImage())
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageError, setImageError] = useState(null)
+  const fileInputRef = useRef(null)
 
   async function refresh() {
     setError(null)
@@ -72,6 +77,23 @@ function ProfileView({ onLogout }) {
       setNicknameError(e.message)
     } finally {
       setSavingNickname(false)
+    }
+  }
+
+  async function handleImageSelected(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setImageError(null)
+    setUploadingImage(true)
+    try {
+      const base64 = await resizeImageToBase64(file)
+      await updateProfileImage(base64)
+      setProfileImageState(base64)
+    } catch (err) {
+      setImageError(err.message)
+    } finally {
+      setUploadingImage(false)
     }
   }
 
@@ -124,6 +146,10 @@ function ProfileView({ onLogout }) {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
+            role="button"
+            tabIndex={0}
+            onClick={() => fileInputRef.current?.click()}
+            title="프로필 사진 변경"
             style={{
               width: '48px',
               height: '48px',
@@ -133,10 +159,29 @@ function ProfileView({ onLogout }) {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '24px',
+              cursor: 'pointer',
+              overflow: 'hidden',
+              flexShrink: 0,
+              opacity: uploadingImage ? 0.5 : 1,
             }}
           >
-            🙂
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="프로필 사진"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              '🙂'
+            )}
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelected}
+            style={{ display: 'none' }}
+          />
           <div>
             {editingNickname ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
@@ -180,6 +225,9 @@ function ProfileView({ onLogout }) {
             )}
             {nicknameError && (
               <p className="error-text" style={{ margin: '0 0 4px', fontSize: '11px' }}>{nicknameError}</p>
+            )}
+            {imageError && (
+              <p className="error-text" style={{ margin: '0 0 4px', fontSize: '11px' }}>{imageError}</p>
             )}
             <p style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
               {labelOf(AGE_HOUSEHOLD_OPTIONS, profile.ageHouseholdType)} · {spending?.label}
