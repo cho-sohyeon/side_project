@@ -121,7 +121,7 @@ public class UserService {
 
 	public void updateProfileImage(Long userId, String profileImageBase64) {
 		if (profileImageBase64 != null && profileImageBase64.length() > MAX_PROFILE_IMAGE_LENGTH) {
-			throw new IllegalStateException("이미지 용량이 너무 큽니다. 더 작은 이미지를 사용해주세요.");
+			throw new IllegalArgumentException("이미지 용량이 너무 큽니다. 더 작은 이미지를 사용해주세요.");
 		}
 		userMapper.updateProfileImage(userId, profileImageBase64);
 	}

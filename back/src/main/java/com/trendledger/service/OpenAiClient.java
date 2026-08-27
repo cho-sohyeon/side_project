@@ -182,7 +182,7 @@ public class OpenAiClient {
 		return splitIntoBubbles(stripMarkdown(((String) message.get("content")).trim()));
 	}
 
-	private static final int MAX_CHAT_BUBBLES = 5;
+	private static final int MAX_CHAT_BUBBLES = 4;
 	private static final java.util.regex.Pattern NUMBERED_ITEM = java.util.regex.Pattern.compile("(?=\\d\\)\\s)");
 
 	/**

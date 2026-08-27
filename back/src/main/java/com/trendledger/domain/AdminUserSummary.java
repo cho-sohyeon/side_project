@@ -11,6 +11,12 @@ public record AdminUserSummary(
 		LocalDateTime createdAt,
 		long expenseCount,
 		BigDecimal totalExpenseAmount,
-		BigDecimal totalIncomeAmount
+		BigDecimal totalIncomeAmount,
+		String ageHouseholdType,
+		String spendingHabitType,
+		String investmentPropensityType,
+		String savingsTier,
+		LocalDateTime lastExpenseAt,
+		LocalDateTime lastLoginAt
 ) {
 }

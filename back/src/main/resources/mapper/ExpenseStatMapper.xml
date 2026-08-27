@@ -5,6 +5,8 @@
 	<sql id="whereClause">
 		<where>
 			user_id = #{userId}
+			AND transaction_type = 'EXPENSE'
+			AND is_settlement = false
 			<if test="startYearMonth != null and startYearMonth != ''">
 				AND expense_date &gt;= to_date(#{startYearMonth} || '-01', 'YYYY-MM-DD')
 			</if>

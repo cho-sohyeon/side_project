@@ -84,6 +84,16 @@ public class TrendGuideService {
 		this.interestTopicService = interestTopicService;
 	}
 
+	/**
+	 * 관리자 대시보드처럼 뉴스 카드 없이 절약 티어만 가볍게 필요할 때 사용한다.
+	 * (Naver/OpenAI 호출 없이 DB 집계만으로 계산)
+	 */
+	public String getTier(Long userId) {
+		YearMonth currentMonth = YearMonth.now();
+		String currentYearMonth = currentMonth.format(YEAR_MONTH_FORMAT);
+		return resolveTierContext(userId, currentMonth, currentYearMonth).tier();
+	}
+
 	public TrendGuideResponse getGuide(Long userId, boolean forceRefresh) {
 		YearMonth currentMonth = YearMonth.now();
 		String currentYearMonth = currentMonth.format(YEAR_MONTH_FORMAT);

@@ -11,10 +11,23 @@
 			u.created_at AS createdAt,
 			COUNT(e.expense_id) AS expenseCount,
 			COALESCE(SUM(CASE WHEN e.transaction_type = 'EXPENSE' AND e.is_settlement = false THEN e.amount ELSE 0 END), 0) AS totalExpenseAmount,
-			COALESCE(SUM(CASE WHEN e.transaction_type = 'INCOME' THEN e.amount ELSE 0 END), 0) AS totalIncomeAmount
+			COALESCE(SUM(CASE WHEN e.transaction_type = 'INCOME' THEN e.amount ELSE 0 END), 0) AS totalIncomeAmount,
+			p.age_household_type AS ageHouseholdType,
+			p.spending_habit_type AS spendingHabitType,
+			p.investment_propensity_type AS investmentPropensityType,
+			CAST(NULL AS VARCHAR) AS savingsTier,
+			MAX(e.created_at) AS lastExpenseAt,
+			s.lastLoginAt
 		FROM users u
 		LEFT JOIN expenses e ON e.user_id = u.user_id
-		GROUP BY u.user_id, u.username, u.nickname, u.role, u.created_at
+		LEFT JOIN profiles p ON p.user_id = u.user_id
+		LEFT JOIN (
+			SELECT user_id, MAX(created_at) AS lastLoginAt
+			FROM sessions
+			GROUP BY user_id
+		) s ON s.user_id = u.user_id
+		GROUP BY u.user_id, u.username, u.nickname, u.role, u.created_at,
+			p.age_household_type, p.spending_habit_type, p.investment_propensity_type, s.lastLoginAt
 		ORDER BY u.created_at DESC
 	</select>
 
