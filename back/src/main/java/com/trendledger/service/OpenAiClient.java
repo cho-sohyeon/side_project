@@ -195,7 +195,10 @@ public class OpenAiClient {
 		String[] parts = NUMBERED_ITEM.split(text);
 		List<String> bubbles = new java.util.ArrayList<>();
 		for (String part : parts) {
-			String trimmed = part.trim();
+			// 모델이 번호 항목 "안에서" 예시/이유를 빈 줄로 띄워 쓰는 경우가 있는데,
+			// 프론트엔드는 빈 줄만 보고 말풍선을 다시 쪼개므로 항목 내부의 개행은
+			// 전부 공백으로 눌러서 "말풍선 사이"에만 실제 빈 줄이 남도록 만든다.
+			String trimmed = part.trim().replaceAll("\\s*\\n+\\s*", " ");
 			if (!trimmed.isEmpty()) {
 				bubbles.add(trimmed);
 			}
