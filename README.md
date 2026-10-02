@@ -62,6 +62,16 @@
 7. **프로필** 탭에서 닉네임/기본정보/프로필 사진을 수정하거나 비밀번호를 변경할 수 있습니다.
 8. 관리자 계정이라면 **관리자** 탭에서 전체 회원 현황을 확인할 수 있습니다.
 
+```mermaid
+flowchart TD
+    A[회원가입 / 로그인] --> B[온보딩 설문<br/>기본정보·소비습관·투자성향]
+    B --> C[거래입력<br/>AI 자동 분류]
+    C --> D[목표·절약<br/>예산 목표 · 무지출 챌린지]
+    D --> E[투자트렌드<br/>절약 티어별 맞춤 뉴스]
+    E --> F[Ledger 챗봇<br/>재테크 상담]
+    F --> G[프로필<br/>정보 · 사진 관리]
+```
+
 ## 기술 스택
 
 | 구분 | 스택 |
@@ -72,6 +82,26 @@
 | 인증 | 자체 세션 토큰 기반 인증 (BCrypt 비밀번호 해시) |
 | 외부 API | OpenAI (`gpt-4o-mini`) — 지출 분류·뉴스 인사이트·챗봇 / 네이버 뉴스 검색 API |
 | 배포 | Coolify (GitHub 웹훅 연동 자동 배포) |
+
+```mermaid
+flowchart LR
+    subgraph Client
+        FE[React / Vite\nFrontend]
+    end
+
+    subgraph Server
+        BE[Spring Boot\nBackend API]
+    end
+
+    DB[(PostgreSQL\nSupabase)]
+    OpenAI[OpenAI\ngpt-4o-mini]
+    Naver[네이버 뉴스\n검색 API]
+
+    FE -- REST API / X-Auth-Token --> BE
+    BE -- MyBatis --> DB
+    BE -- 지출 분류 · 뉴스 인사이트 · 챗봇 --> OpenAI
+    BE -- 트렌드 뉴스 검색 --> Naver
+```
 
 ## 프로젝트 구조
 
